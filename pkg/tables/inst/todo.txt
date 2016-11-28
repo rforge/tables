@@ -1,0 +1,5 @@
+To-do list
+
+Add support for nice formatting of tables of raw data.
+
+Add support for editing the labels on a table.
