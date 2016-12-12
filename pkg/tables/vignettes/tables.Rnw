@@ -1142,7 +1142,21 @@ tab <- NULL
 for (sub in c("A", "B")) 
     tab <- rbind(tab, tabular( formula, 
                                data = subset(q, p == sub) ) )
-latex(rbind(tab))
+latex(tab)
+@
+\end{center}
+
+It is also possible to edit the row or column labels after constructing 
+the table.  For example, 
+<<>>=
+colLabels(tab)
+labs <- colLabels(tab)
+labs[1, 2] <- "New label"
+colLabels(tab) <- labs
+@
+\begin{center}
+<<results=tex>>=
+latex(tab)
 @
 \end{center}
 

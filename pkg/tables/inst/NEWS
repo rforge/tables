@@ -103,3 +103,6 @@
       Added an HTML vignette.
       Fixed bug:  functions prefixed by "pkg::" in formulas led to warning
       messages. (Reported by Lars Bishop.)
+      
+0.7.94:
+      Allow editing of the row and column labels.

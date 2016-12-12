@@ -142,3 +142,62 @@ rbind.tabular <- function(..., deparse.level = 1) {
 	attributes(result) <- attrs
     result
 }
+
+rowLabels <- function(x) {
+  structure(attr(x, "rowLabels"), class = c("tabularRowLabels", "tabularLabels"))
+}
+
+`rowLabels<-` <- function(x, value) {
+  stopifnot(inherits(value, "tabularRowLabels"),
+  	    dim(x)[1] == dim(value)[1])
+  attr(x, "rowLabels") <- value
+  x
+}
+
+colLabels <- function(x) {
+	structure(attr(x, "colLabels"), class = c("tabularColLabels", "tabularLabels"))
+}
+
+`colLabels<-` <- function(x, value) {
+	stopifnot(inherits(value, "tabularColLabels"),
+		  dim(x)[2] == dim(value)[2])
+	attr(x, "colLabels") <- value
+	x
+}
+
+`[.tabularColLabels` <- function(x, i, j, ..., drop=FALSE) {
+  if (drop) return(unclass(x)[i,j, ..., drop=TRUE])
+  stopifnot(missing(j) || length(j) == dim(x)[2])
+  justification <- attr(x, "justification")
+  attr(x, "justification") <- justification[i, j, ..., drop = FALSE]
+  a <- attributes(x)
+  x <- unclass(x)[i, j, ..., drop = FALSE]
+  a[c("dim", "dimnames")] <- NULL
+  attributes(x) <- c(attributes(x), a)
+  x
+}
+
+`[.tabularRowLabels` <- function(x, i, j, ..., drop=FALSE) {
+  if (drop) return(unclass(x)[i,j, ..., drop=TRUE])
+  stopifnot(missing(i) || length(i) == dim(x)[1])
+  justification <- attr(x, "justification")
+  attr(x, "justification") <- justification[i, j, ..., drop = FALSE]
+  a <- attributes(x)
+  x <- unclass(x)[i, j, ..., drop = FALSE]
+  a[c("dim", "dimnames")] <- NULL
+  attributes(x) <- c(attributes(x), a)
+  x
+}
+
+print.tabularLabels <- function(x, ...) {
+  attrnames <- names(attributes(x))
+  delnames <- setdiff(attrnames, c("dim", "dimnames"))
+  attributes(x)[delnames] <- NULL
+  x[is.na(x)] <- ""
+  x <- noquote(x)
+  class(x) <- setdiff(class(x), "tabularRowLabels")
+  print(x, ...)
+  cat(paste("Attributes: ", 
+  	  paste(attrnames, collapse = ", "), "\n"))
+}
+
