@@ -193,7 +193,6 @@ print.tabularLabels <- function(x, ...) {
   attrnames <- names(attributes(x))
   delnames <- setdiff(attrnames, c("dim", "dimnames"))
   attributes(x)[delnames] <- NULL
-  x[is.na(x)] <- ""
   x <- noquote(x)
   class(x) <- setdiff(class(x), "tabularRowLabels")
   print(x, ...)
