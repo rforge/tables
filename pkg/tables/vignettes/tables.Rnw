@@ -1159,6 +1159,10 @@ colLabels(tab) <- labs
 latex(tab)
 @
 \end{center}
+Note that \verb!<NA>! in the column labels means ``same as 
+the label to the left'', and in the row labels it means
+``same as the label above''.  This is used in constructing
+multi-column or multi-row labels.
 
 \section*{Acknowledgments}
 
