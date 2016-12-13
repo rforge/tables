@@ -3,48 +3,20 @@
     if (drop) return(unclass(x)[i,j, drop=TRUE])
 
     attrs <- attributes(x)
+    rowLabels <- rowLabels(x)
+    colLabels <- colLabels(x)
     x <- unclass(x)[i,j, drop=FALSE]
     attrs$justification <- attrs$justification[i,j, drop=FALSE]
     attrs$formats <- attrs$formats[i,j, drop=FALSE]
     attrs$dim <- dim(x)
     attrs$dimnames <- dimnames(x)
 
-    rowLabels <- attrs$rowLabels
-    rattrs <- attributes(rowLabels)
-    rattrs$justification <- rattrs$justification[i,, drop=FALSE]
-    rattrs$dim <- dim(rattrs$justification)
-
-    # This is the tricky bit
-    orig <- row(rowLabels)
-    for (k in seq_len(nrow(orig))[-1]) 
-	orig[k,] <- ifelse(is.na(rowLabels[k,]), orig[k-1,], orig[k,])
-    orig <- orig[i,, drop=FALSE]
-    rowLabels <- rowLabels[cbind(c(orig), c(col(orig)))]
-    dim(rowLabels) <- dim(orig)
-    for (k in seq_len(nrow(orig))[-1])
-	rowLabels[k,] <- ifelse(orig[k,] == orig[k-1,], NA, rowLabels[k,])
-    rattrs$dimnames[1] <- list(NULL)
-
-    # Do the same for column labels
-    colLabels <- attrs$colLabels
-    cattrs <- attributes(colLabels)
-    cattrs$justification <- cattrs$justification[,j, drop=FALSE]
-    cattrs$dim <- dim(cattrs$justification)
-    orig <- col(colLabels)
-    for (k in seq_len(ncol(orig))[-1]) 
-	orig[,k] <- ifelse(is.na(colLabels[,k]), orig[,k-1], orig[,k])
-    orig <- orig[,j, drop=FALSE]
-    colLabels <- colLabels[cbind(c(row(orig)), c(orig))]
-    dim(colLabels) <- dim(orig)
-    for (k in seq_len(ncol(orig))[-1])
-	colLabels[,k] <- ifelse(orig[,k] == orig[,k-1], NA, colLabels[,k])
-    cattrs$dimnames[2] <- list(NULL)
-
+    rowLabels <- rowLabels[i,, drop = FALSE]
+    colLabels <- colLabels[,j, drop = FALSE]
+    
     # Put it all back together
-    attributes(rowLabels) <- rattrs
-    attrs$rowLabels <- rowLabels
-    attributes(colLabels) <- cattrs
-    attrs$colLabels <- colLabels
+    attrs$rowLabels <- unclass(rowLabels)
+    attrs$colLabels <- unclass(colLabels)
     attributes(x) <- attrs
     x
 }
@@ -150,7 +122,7 @@ rowLabels <- function(x) {
 `rowLabels<-` <- function(x, value) {
   stopifnot(inherits(value, "tabularRowLabels"),
   	    dim(x)[1] == dim(value)[1])
-  attr(x, "rowLabels") <- value
+  attr(x, "rowLabels") <- unclass(value)
   x
 }
 
@@ -161,33 +133,64 @@ colLabels <- function(x) {
 `colLabels<-` <- function(x, value) {
 	stopifnot(inherits(value, "tabularColLabels"),
 		  dim(x)[2] == dim(value)[2])
-	attr(x, "colLabels") <- value
+	attr(x, "colLabels") <- unclass(value)
 	x
 }
 
 `[.tabularColLabels` <- function(x, i, j, ..., drop=FALSE) {
   if (drop) return(unclass(x)[i,j, ..., drop=TRUE])
-  stopifnot(missing(j) || length(j) == dim(x)[2])
-  justification <- attr(x, "justification")
-  attr(x, "justification") <- justification[i, j, ..., drop = FALSE]
+  
+  colLabels <- unclass(x) 
   a <- attributes(x)
-  x <- unclass(x)[i, j, ..., drop = FALSE]
+  
+  # This is the tricky bit
+  origrows <- row(colLabels)
+  dimnames(origrows) <- dimnames(colLabels)
+  origcols <- col(colLabels)
+  for (k in seq_len(ncol(origcols))[-1]) 
+    origcols[, k] <- ifelse(is.na(colLabels[, k]), origcols[, k-1], origcols[, k])
+  origrows <- origrows[i,j, ..., drop=FALSE]
+  origcols <- origcols[i,j, ..., drop=FALSE]
+  colLabels <- colLabels[cbind(c(origrows), c(origcols))]
+  dim(colLabels) <- dim(origrows)
+  for (k in seq_len(ncol(origcols))[-1])
+    colLabels[, k] <- ifelse(origcols[, k] == origcols[, k-1], NA, colLabels[, k])
+  dimnames(colLabels) <- list(dimnames(origrows)[[1]], NULL)
+  
+  justification <- a$justification
+  a$justification <- justification[i, j, ..., drop = FALSE]
   a[c("dim", "dimnames")] <- NULL
-  attributes(x) <- c(attributes(x), a)
-  x
+  attributes(colLabels) <- c(attributes(colLabels), a)
+  colLabels
 }
 
 `[.tabularRowLabels` <- function(x, i, j, ..., drop=FALSE) {
   if (drop) return(unclass(x)[i,j, ..., drop=TRUE])
-  stopifnot(missing(i) || length(i) == dim(x)[1])
-  justification <- attr(x, "justification")
-  attr(x, "justification") <- justification[i, j, ..., drop = FALSE]
+
+  rowLabels <- unclass(x) 
   a <- attributes(x)
-  x <- unclass(x)[i, j, ..., drop = FALSE]
+  
+  # This is the tricky bit
+  origrows <- row(rowLabels)
+  dimnames(origrows) <- dimnames(rowLabels)
+  origcols <- col(rowLabels)
+  for (k in seq_len(nrow(origrows))[-1]) 
+    origrows[k,] <- ifelse(is.na(rowLabels[k,]), origrows[k-1,], origrows[k,])
+  origrows <- origrows[i,j, ..., drop=FALSE]
+  origcols <- origcols[i,j, ..., drop=FALSE]
+  rowLabels <- rowLabels[cbind(c(origrows), c(origcols))]
+  dim(rowLabels) <- dim(origrows)
+  for (k in seq_len(nrow(origrows))[-1])
+    rowLabels[k,] <- ifelse(origrows[k,] == origrows[k-1,], NA, rowLabels[k,])
+  dimnames(rowLabels) <- list(NULL, dimnames(origrows)[[2]])
+
+  justification <- a$justification
+  a$justification <- justification[i, j, ..., drop = FALSE]
   a[c("dim", "dimnames")] <- NULL
-  attributes(x) <- c(attributes(x), a)
-  x
+  attributes(rowLabels) <- c(attributes(rowLabels), a)
+  rowLabels
 }
+
 
 print.tabularLabels <- function(x, ...) {
   attrnames <- names(attributes(x))
