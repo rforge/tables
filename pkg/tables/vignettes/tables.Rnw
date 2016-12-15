@@ -705,6 +705,45 @@ latex( tabular( (Factor(gp) + 1)
 @
 The order of the \code{weighted.mean} and \code{Arguments()} factors makes no difference.
 
+\subsubsection{\code{DropEmpty()}}
+
+\code{DropEmpty()} indicates that cells (or whole
+rows or columns of the table) should be dropped if they 
+contain no observations.  This will prevent 
+ugly results like \code{NA} or \code{NaN} from showing
+up in the table.
+
+This pseudo-function takes two optional arguments,
+\code{which} (with default value \code{c("row", "col", "cell")}) and \code{empty} (with default value \code{""}).
+
+If the \code{which} argument contains \code{"row"}, then
+any row in the table in which all cells are empty will be dropped.
+Similarly, if it contains \code{"col"}, empty columns
+will be dropped.  If it contains \code{"cell"}, then cells
+in rows and columns that are not dropped will be set to
+the \code{empty} string.
+
+For example, without using \code{DropEmpty()}, this 
+table is ugly:
+\begin{center}
+<<results=tex>>=
+df <- data.frame(Label = LETTERS[1:9], 
+		 Group = rep(letters[1:3], each=3), 
+		 Value = rnorm(9), 
+		 stringsAsFactors = TRUE)
+latex( tabular( Label ~ Group*Value*mean, 
+		data = df[1:6,]))
+@
+\end{center}
+This looks much better:
+\begin{center}
+<<results=tex>>=
+latex( tabular( Label ~ Group*Value*mean*
+			DropEmpty(empty="."), 
+		data = df[1:6,]))
+@
+\end{center}
+
 \subsection{Formula Functions}
 \label{sec:tableformulas}
 

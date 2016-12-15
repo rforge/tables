@@ -7,6 +7,7 @@
     colLabels <- colLabels(x)
     x <- unclass(x)[i,j, drop=FALSE]
     attrs$justification <- attrs$justification[i,j, drop=FALSE]
+    attrs$dropcells <- attrs$dropcells[i, j, drop=FALSE]
     attrs$formats <- attrs$formats[i,j, drop=FALSE]
     attrs$dim <- dim(x)
     attrs$dimnames <- dimnames(x)
@@ -40,6 +41,7 @@ cbind.tabular <- function(..., deparse.level = 1) {
 	    result <- cbind(result, unclass(x))
 
 	    attrs$justification <- cbind(attrs$justification, xattrs$justification)
+	    attrs$dropcells <- cbind(attrs$dropcells, xattrs$dropcells)   
 	    attrs$formats <- cbind(attrs$formats, xattrs$formats + length(fmtlist))
 	    attrs$dim <- dim(result)
 	    attrs$dimnames <- dimnames(result)
@@ -87,6 +89,7 @@ rbind.tabular <- function(..., deparse.level = 1) {
 	    result <- rbind(result, unclass(x))
 
 	    attrs$justification <- rbind(attrs$justification, xattrs$justification)
+	    attrs$dropcells <- rbind(attrs$dropcells, xattrs$dropcells)
 	    attrs$formats <- rbind(attrs$formats, xattrs$formats + length(fmtlist))
 	    attrs$dim <- dim(result)
 	    attrs$dimnames <- dimnames(result)

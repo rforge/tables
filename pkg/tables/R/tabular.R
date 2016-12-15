@@ -12,6 +12,9 @@ term2table <- function(rowterm, colterm, env, n) {
     allargs <- c(rowargs, colargs)
     rowsubset <- TRUE
     colsubset <- TRUE
+    dropcell <- FALSE
+    droprow <- FALSE
+    dropcol <- FALSE
     pctdenom <- NULL
     pctsubset <- TRUE
     values <- NULL
@@ -54,6 +57,19 @@ term2table <- function(rowterm, colterm, env, n) {
 	      arguments <- e
 	    else
 	      stop(gettextf("Duplicate Arguments list: %s and %s", deparse(arguments), deparse(e)))
+        } else if (fn == "DropEmpty") {
+            e1 <- match.call(DropEmpty, e)
+            which <- e1[["which"]]
+            if (is.null(which))
+            	which <- c("row", "col", "cell")
+            else
+            	which <- match.arg(which, c("row", "col", "cell"), several.ok = TRUE)
+            empty <- e1[["empty"]]
+            if (is.null(empty))
+            	empty <- ""
+            dropcell <- "cell" %in% which
+            droprow <- "row" %in% which
+            dropcol <- "col" %in% which
         } else if (fn != "Heading" && !identical(e, 1)) {
     	    arg <- eval(e, env)
     	    asis <- inherits(arg, "AsIs")
@@ -85,7 +101,7 @@ term2table <- function(rowterm, colterm, env, n) {
     	    	         deparse(e)))
     	    } else 
     	    	stop(gettextf("Unrecognized entry '%s'", deparse(e)))
-    	}
+        } 
     }
     if (!is.null(pctdenom)) { # We need a second pass to find the subsets
 	for (i in seq_along(allargs)) {
@@ -146,7 +162,10 @@ term2table <- function(rowterm, colterm, env, n) {
     if (length(value) != 1)
 	warning(gettextf("Summary statistic is length %d", length(value)), call. = FALSE)
     structure(list(value), n=n, format=format, 
-                   justification=justification)
+              justification=justification,
+    	      dropcell = ifelse(dropcell && !any(subset), empty, NA_character_),
+    	      droprow = droprow && !any(rowsubset), 
+    	      dropcol = dropcol && !any(colsubset))
 }
 
 # This moves column names into their own column
@@ -155,6 +174,7 @@ moveColnames <- function(labels, do_move = (names != "")) {
     names <- colnames(labels)
     colnamejust <- attrs$colnamejust
     justification <- attrs$justification
+    dropcell <- attrs$dropcell
     for (i in rev(seq_along(do_move))) {
     	if (do_move[i]) {
 	    before <- seq_len(i-1)
@@ -168,10 +188,14 @@ moveColnames <- function(labels, do_move = (names != "")) {
 	    if (length(justification)) 
 	    	justification <- cbind(justification[,before,drop=FALSE], 
 	    	    NA_character_, justification[,after,drop=FALSE])
+	    if (length(dropcell))
+	    	dropcell <- cbind(dropcell[,before,drop=FALSE],
+	    			  NA_character_, dropcell[,after,drop=FALSE])
 	}
     }
     attrs$colnamejust <- colnamejust
     attrs$justification <- justification
+    attrs$dropcell <- dropcell
     attrs$dim <- dim(labels)
     attrs$dimnames[[2]] <- names
     attributes(labels) <- attrs
@@ -399,6 +423,7 @@ getLabels <- function(e, rows=TRUE, justify=NA, head=NULL, suppress=0) {
     	Heading <- NULL
     } else if (op == "Percent") {
         result <- matrix(gettext("Percent"), 1,1, dimnames=list(NULL, ""))
+    } else if (op == "DropEmpty") { # do nothing
     } else if (identical(e, 1)) 
     	result <- matrix(gettext("All"), 1,1, dimnames=list(NULL, ""))
     else
@@ -419,7 +444,8 @@ expandExpressions <- function(e, env) {
 		e[[3]] <- expandExpressions(e[[3]], env)
 	} else if (op == "Format" || op == ".Format" 
 	        || op == "Heading" || op == "Justify"
-	        || op == "Percent" || op == "Arguments")
+	        || op == "Percent" || op == "Arguments"
+		|| op == "DropEmpty")
 	    e
 	else {
 	    v <- eval(e, envir=env)
@@ -503,7 +529,8 @@ expandFactors <- function(e, env) {
     	} else
     	    call("*", call("Heading", as.name(deparse(e[[2]]))), rhs)
     } else if (op == ".Format" || op == "Heading" || 
-             op == "Justify" || op == "Percent" || op == "Arguments")
+               op == "Justify" || op == "Percent" || 
+    	       op == "Arguments" || op == "DropEmpty")
     	e
     else {
     	v <- eval(e, envir=env)
@@ -602,26 +629,50 @@ tabular.formula <- function(table, data=NULL, n, suppressLabels=0, ...) {
     result <- NULL
     formats <- NULL
     justifications <- NULL
+    dropcells <- NULL
+    
+    droprow <- rep(TRUE, length(rows))
+    dropcol <- rep(TRUE, length(cols))
     for (i in seq_along(rows)) {
     	row <- NULL
     	rowformats <- NULL
     	rowjustification <- NULL
+    	rowdropcell <- NULL
     	for (j in seq_along(cols)) {
     	    # term2table checks that n matches across calls
     	    term <- term2table(rows[[i]], cols[[j]], data, n)
     	    n <- attr(term, "n")
     	    format <- attr(term, "format")
     	    justification <- attr(term, "justification")
+    	    dropcell <- attr(term, "dropcell")
+    	    droprow[i] <- droprow[i] && attr(term, "droprow")
+    	    dropcol[j] <- dropcol[j] && attr(term, "dropcol")
     	    row <- cbind(row, term)
     	    rowformats <- cbind(rowformats, format)
     	    rowjustification <- cbind(rowjustification, justification)
+    	    rowdropcell <- cbind(rowdropcell, dropcell)
     	}
     	result <- rbind(result, row)
     	formats <- rbind(formats, rowformats)
     	justifications <- rbind(justifications, rowjustification)
+    	dropcells <- rbind(dropcells, rowdropcell)
+    }
+    if (any(c(droprow, dropcol))) {
+    	result <- result[!droprow, !dropcol, drop = FALSE]
+    	formats <- formats[!droprow, !dropcol]
+    	justifications <- justifications[!droprow, !dropcol, drop = FALSE]
+    	dropcells <- dropcells[!droprow, !dropcol, drop = FALSE]
+    	save <- class(rlabels)
+    	class(rlabels) <- c("tabularRowLabels", save)
+    	rlabels <- rlabels[!droprow,, drop = FALSE]
+    	class(rlabels) <- save
+    	save <- class(clabels)
+    	class(clabels) <- c("tabularColLabels", save)
+    	clabels <- clabels[, !dropcol, drop = FALSE]
+    	class(clabels) <- save
     }
     structure(result, formula=formula, rowLabels=rlabels, colLabels=clabels, table=table,
-    	      formats = formats, justification = justifications, 
+    	      formats = formats, justification = justifications, dropcells = dropcells,
     	      class = "tabular")
 }
 
@@ -694,13 +745,15 @@ format.tabular <- function(x, digits=4, justification="n",
     fmtlist <- attr(table, "fmtlist")
     justify <- attr(x, "justification")
     justify[is.na(justify)] <- justification
+    dropcells <- attr(x, "dropcells")
     ischar <- sapply(result, is.character)
     chars <- matrix(NA_character_, nrow(result), ncol(result))
     chars[ischar] <- unlist(result[ischar])
     lengths <- lapply(result, length)
     
     for (i in seq_len(ncol(result))) {
-        ind <- col(result) == i & is.na(formats) & !ischar & lengths == 1
+        ind <- col(result) == i & is.na(formats) & !ischar & 
+        	lengths == 1 & is.na(dropcells)
 	if (any(ind)) {
             x <- do.call(c, result[ind])
     	    chars[ind] <- format(x, digits=digits, ...)
@@ -713,7 +766,7 @@ format.tabular <- function(x, digits=4, justification="n",
     	}
     }
     for (i in seq_along(fmtlist)) {
-    	ind <- !is.na(formats) & formats == i
+    	ind <- !is.na(formats) & formats == i & is.na(dropcells)
     	if (any(ind)) {        
             call <- fmtlist[[i]]
             isformat <- identical(call[[1]], format)
@@ -739,8 +792,10 @@ format.tabular <- function(x, digits=4, justification="n",
        	    }
        	}
     }
+    chars[!is.na(dropcells)] <- dropcells[!is.na(dropcells)]
     if (!latex && !html)
     	for (i in seq_len(ncol(result))) 
     	    chars[,i] <- justify(chars[,i], justify[,i])
+    chars[]
     chars
 }
