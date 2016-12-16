@@ -104,6 +104,7 @@
       Fixed bug:  functions prefixed by "pkg::" in formulas led to warning
       messages. (Reported by Lars Bishop.)
       
-0.7.100:
+0.7.101:
       Allow editing of the row and column labels.
       Added DropEmpty() pseudo-function.
+      Added AllObs() and RowNum() formula functions.

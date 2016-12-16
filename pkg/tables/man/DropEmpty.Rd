@@ -8,15 +8,15 @@ Pseudo-function to indicate that rows or columns containing
 no observations should be dropped.
 }
 \usage{
-DropEmpty(which = c("row", "col", "cell"), empty = "")
+DropEmpty(empty = "", which = c("row", "col", "cell"))
 }
 \arguments{
+  \item{empty}{
+String to use in empty cells.  
+}
   \item{which}{
 A vector indicating what should be dropped.  See the Details
 below.
-}
-  \item{empty}{
-String to use in empty cells.  
 }
 }
 \details{
@@ -31,9 +31,7 @@ the \code{empty} string.
 \section{Pseudo-functions}{
 This is a \dQuote{pseudo-function}:  it takes the form of a function call, but is
 never actually called:  it is 
-handled specially by \code{\link{tabular}}.  
-
-
+handled specially by \code{\link{tabular}}. 
 }
 
 \examples{

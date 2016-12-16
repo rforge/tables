@@ -1,5 +1,5 @@
 export(tabular, htmlNumeric, labelSubset, latexNumeric, PlusMinus, 
-       Paste, Hline, Factor, RowFactor, All, Literal,
+       Paste, Hline, Factor, RowFactor, All, Literal, AllObs, RowNum,
        Multicolumn, table_options, booktabs, htmloptions, write.csv.tabular, write.table.tabular,
        as.tabular, writeCSS,
        rowLabels, colLabels, "rowLabels<-", "colLabels<-")

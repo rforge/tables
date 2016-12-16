@@ -1,5 +1,5 @@
 factors <- function(e) {
-    if (is.name(e)) list(e)
+    if (is.name(e) || typeof(e) == "closure") list(e)
     else switch(deparse(e[[1]]),
     	"*" = c(factors(e[[2]]),factors(e[[3]])),
     	"(" = factors(e[[2]]),
@@ -58,18 +58,15 @@ term2table <- function(rowterm, colterm, env, n) {
 	    else
 	      stop(gettextf("Duplicate Arguments list: %s and %s", deparse(arguments), deparse(e)))
         } else if (fn == "DropEmpty") {
-            e1 <- match.call(DropEmpty, e)
-            which <- e1[["which"]]
-            if (is.null(which))
-            	which <- c("row", "col", "cell")
-            else
-            	which <- match.arg(which, c("row", "col", "cell"), several.ok = TRUE)
-            empty <- e1[["empty"]]
-            if (is.null(empty))
-            	empty <- ""
-            dropcell <- "cell" %in% which
-            droprow <- "row" %in% which
-            dropcol <- "col" %in% which
+            env1 <- new.env(parent = env)
+            env1$DropEmpty <- function(empty = "", which = c("row", "col", "cell")) {
+              dropcell <<- "cell" %in% which
+              droprow <<- "row" %in% which
+              dropcol <<- "col" %in% which
+              empty <<- empty
+            }
+            empty <- NULL
+            eval(e, env1)
         } else if (fn != "Heading" && !identical(e, 1)) {
     	    arg <- eval(e, env)
     	    asis <- inherits(arg, "AsIs")

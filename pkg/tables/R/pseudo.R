@@ -18,6 +18,5 @@ percent <- function(x, y) 100*length(x)/length(y)
 Arguments <- function (...)
     stop("This is a pseudo-function, not meant to be called.")
 
-DropEmpty <- function (which = c("row", "col", "cell"),
-		       empty = "")
+DropEmpty <- function (empty = "", which = c("row", "col", "cell"))
     stop("This is a pseudo-function, not meant to be called.")
