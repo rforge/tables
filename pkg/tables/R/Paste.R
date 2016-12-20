@@ -1,10 +1,13 @@
-Paste <- function(..., head, digits=2, justify="c", prefix="", sep="", postfix="") {
+Paste <- function(..., head, digits=2, justify="c", prefix="", sep="", postfix="",
+		  character.only = FALSE) {
     head <- if (missing(head)) quote(Heading())
-	else substitute(Heading(head), list(head=substitute(head)))
+	else if (!character.only) substitute(Heading(head), list(head=substitute(head)))
+        else substitute(Heading(head), list(head = head))
     args <- sys.call()[-1]
     names <- names(args)
     if (!is.null(names)) {
-      drop <- names %in% c("head", "digits", "sep", "justify", "prefix", "postfix")
+      drop <- names %in% c("head", "digits", "sep", "justify", "prefix", "postfix",
+      		           "character.only")
       args <- args[!drop]
       names <- names[!drop]
     }

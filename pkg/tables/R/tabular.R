@@ -199,7 +199,8 @@ moveColnames <- function(labels, do_move = (names != "")) {
     labels
 }
     	
-getLabels <- function(e, rows=TRUE, justify=NA, head=NULL, suppress=0) {
+getLabels <- function(e, rows=TRUE, justify=NA, head=NULL, suppress=0,
+		      env) {
     op <- ""
     justification <- NULL
     colnamejust <- character(0)
@@ -229,7 +230,7 @@ getLabels <- function(e, rows=TRUE, justify=NA, head=NULL, suppress=0) {
 	rightcolnamejust <- attr(rightLabels, "colnamejust")
     }
     if (is.call(e) && (op <- deparse(e[[1]])) == "*")  {
-        leftLabels <- getLabels(e[[2]], rows, justify, head, suppress)
+        leftLabels <- getLabels(e[[2]], rows, justify, head, suppress, env)
         getLeft()
 	# Heading and justify are the settings to carry on to later terms
 	# justification is the matrix of justifications for
@@ -239,7 +240,7 @@ getLabels <- function(e, rows=TRUE, justify=NA, head=NULL, suppress=0) {
 	if (!is.null(leftjustify))
 	    justify <- leftjustify
 
-	rightLabels <- getLabels(e[[3]], rows, justify, righthead, suppress)
+	rightLabels <- getLabels(e[[3]], rows, justify, righthead, suppress, env)
 	getRight()
 	Heading <- rightheading
 	suppress <- rightsuppress
@@ -279,11 +280,11 @@ getLabels <- function(e, rows=TRUE, justify=NA, head=NULL, suppress=0) {
 	    }
 	}
     } else if (op == "+") {
-        leftLabels <- getLabels(e[[2]], rows, justify, NULL, suppress)
+        leftLabels <- getLabels(e[[2]], rows, justify, NULL, suppress, env)
         getLeft()
 	Heading <- leftheading
 
-	rightLabels <- getLabels(e[[3]], rows, justify, NULL, suppress)
+	rightLabels <- getLabels(e[[3]], rows, justify, NULL, suppress, env)
 	getRight()
 	Heading <- rightheading
 	suppress <- rightsuppress
@@ -386,29 +387,29 @@ getLabels <- function(e, rows=TRUE, justify=NA, head=NULL, suppress=0) {
 	    }
 	}
     } else if (op == "(") {
-    	return(getLabels(e[[2]], rows, justify, head, suppress))
+    	return(getLabels(e[[2]], rows, justify, head, suppress, env))
     } else if (op == ".Format") {
     	result <- if (rows) matrix(NA, ncol=0, nrow=1)
     		  else      matrix(NA, ncol=1, nrow=0)
     } else if (op == "Heading") {
-    	if (length(e) > 1) {
-    	    override <- TRUE
-    	    if (length(e) > 2) {
-    	    	override <- as.logical(e[[3]])
-    	    	if (is.na(override))
-    	    	    stop(gettextf("Second argument in %s must be logical", deparse(e)), 
-    	    	         call. = FALSE)
+    	env1 <- new.env(parent = env)
+    	env1$Heading <- function(name = NULL, override = TRUE, character.only = FALSE) {
+    	    if (missing(name))
+    	    	suppress <<- suppress + 1
+    	    else {
+    	        if (!character.only)
+    	    	    name <- as.character(substitute(name))
+    	        if (!is.logical(override) || is.na(override))
+    	            stop(gettextf("'%s' argument in '%s' must be TRUE or FALSE",
+    	            	      "override", deparse(e)), call. = FALSE)
+    	        if (suppress <= 0 && (is.null(Heading) || override)) {
+    	            Heading <<- as.character(name)
+    	            suppress <<- 0
+    	        } else
+    	            suppress <<- suppress - 1
     	    }
-    	    if (suppress <= 0 && (is.null(Heading) || override)) {
-    	    	if (is.character(e[[2]]))
-    	    	    Heading <- e[[2]]
-    	    	else
-    	    	    Heading <- deparse(e[[2]])
-    	    	suppress <- 0
-    	    } else 
-    	    	suppress <- suppress - 1
-    	} else
-    	    suppress <- suppress + 1
+    	}
+    	eval(e, env1)
     } else if (op == "Justify") {
     	justify <- as.character(e[[2]])
     } else if (op == "Arguments") {
@@ -608,12 +609,12 @@ tabular.formula <- function(table, data=NULL, n, suppressLabels=0, ...) {
     dims <- tabledims(table)
     if (length(dims) == 1) dims <- c(list(quote((` `=1))), dims)
     dims[[1]] <- expandFactors(dims[[1]], data)
-    rlabels <- getLabels(dims[[1]], rows=TRUE, suppress=suppressLabels)
+    rlabels <- getLabels(dims[[1]], rows=TRUE, suppress=suppressLabels, env = data)
     suppressLabels <- attr(rlabels, "suppress")
     justify <- attr(rlabels, "justify")
     dims[[2]] <- expandFactors(dims[[2]], data)
     clabels <- getLabels(dims[[2]], rows=FALSE, justify=justify,
-			 suppress=suppressLabels)
+			 suppress=suppressLabels, env = data)
     
     # Check if the Percent calls name nonexistent terms
     subsetLabels <- unique(c(collectSubsets(dims[[1]]), collectSubsets(dims[[2]])))
