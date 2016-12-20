@@ -1,8 +1,12 @@
+getHeading <- function(head, subst, character.only) {
+    if (missing(head)) quote(Heading())
+    else if (!character.only) substitute(Heading(head), list(head=subst))
+    else substitute(Heading(head), list(head = head))	
+}
+
 Paste <- function(..., head, digits=2, justify="c", prefix="", sep="", postfix="",
 		  character.only = FALSE) {
-    head <- if (missing(head)) quote(Heading())
-	else if (!character.only) substitute(Heading(head), list(head=substitute(head)))
-        else substitute(Heading(head), list(head = head))
+    head <- getHeading(head, substitute(head), character.only)
     args <- sys.call()[-1]
     names <- names(args)
     if (!is.null(names)) {
