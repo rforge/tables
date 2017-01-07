@@ -8,6 +8,6 @@ Add character.only to Heading().  DONE.
 
 Add support for nice formatting of tables of raw data. DONE
 
-Check that arguments of Pseudo-functions using match.call. DONE
+Check that arguments of Pseudo-functions use match.call. DONE
 
 Add support for editing the labels on a table. DONE

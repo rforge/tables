@@ -60,6 +60,11 @@ term2table <- function(rowterm, colterm, env, n) {
         } else if (fn == "DropEmpty") {
             env1 <- new.env(parent = env)
             env1$DropEmpty <- function(empty = "", which = c("row", "col", "cell")) {
+              good <- which %in% c("row", "col", "cell")
+              if (!all(good))
+              	stop(gettextf("bad 'which' value(s):  %s in %s", 
+                              paste0("'", which[!good], "'", collapse = ","), deparse(e)), 
+                     call. = FALSE)
               dropcell <<- "cell" %in% which
               droprow <<- "row" %in% which
               dropcol <<- "col" %in% which
