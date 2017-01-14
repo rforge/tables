@@ -12,3 +12,4 @@ Imports: stats, utils
 Suggests: knitr
 VignetteBuilder: knitr
 URL: https://r-forge.r-project.org/projects/tables/
+BugReports: https://r-forge.r-project.org/tracker/?atid=5053&group_id=1277
