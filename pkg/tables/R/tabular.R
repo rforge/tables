@@ -161,8 +161,10 @@ term2table <- function(rowterm, colterm, env, n) {
 	}
 	value <- eval(arguments, env)
     }
-    if (length(value) != 1)
+    if (length(value) != 1) {
 	warning(gettextf("Summary statistic is length %d", length(value)), call. = FALSE)
+    	value <- value[1]
+    }
     structure(list(value), n=n, format=format, 
               justification=justification,
     	      dropcell = ifelse(dropcell && !any(subset), empty, NA_character_),
