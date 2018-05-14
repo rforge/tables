@@ -1,7 +1,7 @@
 To-do list
 
 Add conversion of result to kable() format, so kableExtra()
-formatting tweaks can be applied.
+formatting tweaks can be applied.  DONE
 
 Change storage to allow matrices of things to be displayed, all
 using the same conventions:  main table in the middle, row and column labels to the left and top respectively, plus new matrix in 
