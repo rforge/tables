@@ -9,7 +9,7 @@ Maintainer: Duncan Murdoch <murdoch@stats.uwo.ca>
 License: GPL-2
 Depends: R (>= 2.12.0), Hmisc
 Imports: stats, utils, knitr
-Suggests: magrittr, kableExtra (> 0.8.0)
+Suggests: magrittr, kableExtra (>= 0.9.0)
 VignetteBuilder: knitr
 URL: https://r-forge.r-project.org/projects/tables/
 BugReports: https://r-forge.r-project.org/tracker/?atid=5053&group_id=1277
