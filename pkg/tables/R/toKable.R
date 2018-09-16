@@ -7,7 +7,7 @@ getKnitrFormat <- function(default = "latex") {
   default
 }
 
-toKable <- function(table, format = getKnitrFormat(), booktabs = TRUE)
+toKable <- function(table, format = getKnitrFormat(), booktabs = TRUE, ...)
 { 
   if (!inherits(table, "tabular"))
     stop("'table' must be a 'tabular' object.")
@@ -19,10 +19,10 @@ toKable <- function(table, format = getKnitrFormat(), booktabs = TRUE)
   
   if (format == "latex") {
     save <- if (booktabs) booktabs() else table_options()
-    lines <- paste0(capture.output(latex(table)), collapse = "\n")
+    lines <- paste0(capture.output(latex(table, ...)), collapse = "\n")
     table_options(save)
   } else
-    lines <- paste0(capture.output(html(table)), collapse = "\n")
+    lines <- paste0(capture.output(html(table, ...)), collapse = "\n")
   structure(lines,
 	  format = format, class = "knitr_kable",
 	  n_head = nrow(attr(table, "colLabels")))
