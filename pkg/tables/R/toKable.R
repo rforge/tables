@@ -1,10 +1,12 @@
 getKnitrFormat <- function(default = "latex") {
   options <- opts_knit$get(c("out.format", "rmarkdown.pandoc.to"))
+  result <- default
   if (identical(options$out.format, "markdown"))
-    return(options$rmarkdown.pandoc.to)
-  if (!is.null(options$out.format))
-    return(options$out.format)
-  default
+    result <- options$rmarkdown.pandoc.to
+  else if (!is.null(options$out.format))
+    result <- options$out.format
+  if (result %in% c("html4", "html5")) result <- "html"
+  result
 }
 
 toKable <- function(table, format = getKnitrFormat(), booktabs = TRUE, ...)
