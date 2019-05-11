@@ -122,9 +122,9 @@ and material at the bottom of the table goes into \code{bottomrule}.
 \examples{
 tab <- tabular( (Species + 1) ~ (n=1) + Format(digits=2)*
          (Sepal.Length + Sepal.Width)*(mean + sd), data=iris )
-latex(tab)
+toLatex(tab)
 save <- booktabs()
-latex(tab)
+toLatex(tab)
 table_options(save)
 
 \donttest{

@@ -2,18 +2,8 @@
 > options(width = 60)
 
 > library(tables)
-Loading required package: Hmisc
-Loading required package: lattice
-Loading required package: survival
-Loading required package: Formula
-Loading required package: ggplot2
 
-Attaching package: ‘Hmisc’
-
-The following objects are masked from ‘package:base’:
-
-    format.pval, units
-
+> suppressWarnings(RNGversion("3.5.3"))
 
 > tabular((Species + 1) ~ (n = 1) + Format(digits = 2) * 
 +     (Sepal.Length + Sepal.Width) * (mean + sd), data = iris)
@@ -25,7 +15,7 @@ The following objects are masked from ‘package:base’:
  virginica   50 6.59         0.64 2.97        0.32
  All        150 5.84         0.83 3.06        0.44
 
-> latex(tabular((Species + 1) ~ (n = 1) + Format(digits = 2) * 
+> toLatex(tabular((Species + 1) ~ (n = 1) + Format(digits = 2) * 
 +     (Sepal.Length + Sepal.Width) * (mean + sd), data = iris))
 \begin{tabular}{lccccc}
 \hline
@@ -55,7 +45,7 @@ $titlerule
 NULL
 
 
-> latex(tabular((Species + 1) ~ (n = 1) + Format(digits = 2) * 
+> toLatex(tabular((Species + 1) ~ (n = 1) + Format(digits = 2) * 
 +     (Sepal.Length + Sepal.Width) * (mean + sd), data = iris))
 \begin{tabular}{lccccc}
 \toprule
@@ -190,7 +180,7 @@ $titlerule
 [1] "\\cmidrule(lr)"
 
 
-> latex(tabular((Species + 1) ~ (n = 1) + Format(digits = 2) * 
+> toLatex(tabular((Species + 1) ~ (n = 1) + Format(digits = 2) * 
 +     (Sepal.Length + Sepal.Width) * (mean + sd), data = iris))
 \begin{tabular}{lccccc}
 \toprule
@@ -204,9 +194,9 @@ All  & $150$ & $5.84$ & $0.83$ & $3.06$ & $0.44$ \\
 \bottomrule 
 \end{tabular}
 
-> latex(tabular(Species ~ (n = 1) + Format(digits = 2) * 
+> toLatex(tabular(Species ~ (n = 1) + Format(digits = 2) * 
 +     (Sepal.Length + Sepal.Width) * (mean + sd), data = iris), 
-+     options = list(doFoot .... [TRUNCATED] 
++     options = list(doFo .... [TRUNCATED] 
 \begin{tabular}{lccccc}
 \toprule
  &  & \multicolumn{2}{c}{Sepal.Length} & \multicolumn{2}{c}{Sepal.Width} \\ \cmidrule(lr){3-4}\cmidrule(lr){5-6}
@@ -220,14 +210,14 @@ virginica  & $50$ & $6.59$ & $0.64$ & $2.97$ & $0.32$ \\
 \ \\ \multicolumn{6}{l}{
 \textit{Overall, we see the following: }} \\
 \ \\
-> latex(tabular(1 ~ (n = 1) + Format(digits = 2) * (Sepal.Length + 
-+     Sepal.Width) * (mean + sd), data = iris), options = list(doBegin = FALSE, 
-+ .... [TRUNCATED] 
+> toLatex(tabular(1 ~ (n = 1) + Format(digits = 2) * 
++     (Sepal.Length + Sepal.Width) * (mean + sd), data = iris), 
++     options = list(doBegin =  .... [TRUNCATED] 
 All  & $150$ & $5.84$ & $0.83$ & $3.06$ & $0.44$ \\
 \bottomrule 
 \end{tabular}
 
-> latex(tabular(F + 1 ~ 1))
+> toLatex(tabular(F + 1 ~ 1))
 \begin{tabular}{lc}
 \toprule
 F  & \multicolumn{1}{c}{All} \\ 
@@ -238,7 +228,7 @@ All  & $10$ \\
 \bottomrule 
 \end{tabular}
 
-> latex(tabular(X * F * (mean + sd) ~ 1))
+> toLatex(tabular(X * F * (mean + sd) ~ 1))
 \begin{tabular}{lllc}
 \toprule
  & F &  & \multicolumn{1}{c}{All} \\ 
@@ -250,7 +240,7 @@ X & a & mean  & $\phantom{-}0.02525$ \\
 \bottomrule 
 \end{tabular}
 
-> latex(tabular(X * F ~ mean + sd))
+> toLatex(tabular(X * F ~ mean + sd))
 \begin{tabular}{llcc}
 \toprule
  & F & mean & \multicolumn{1}{c}{sd} \\ 
@@ -260,7 +250,7 @@ X & a  & $\phantom{-}0.02525$ & $0.3484$ \\
 \bottomrule 
 \end{tabular}
 
-> latex(tabular(X * (Newname = F) ~ mean + sd))
+> toLatex(tabular(X * (Newname = F) ~ mean + sd))
 \begin{tabular}{llcc}
 \toprule
  & Newname & mean & \multicolumn{1}{c}{sd} \\ 
@@ -270,7 +260,7 @@ X & a  & $\phantom{-}0.02525$ & $0.3484$ \\
 \bottomrule 
 \end{tabular}
 
-> latex(tabular((F + 1) ~ (n = 1) + X * (mean + sd)))
+> toLatex(tabular((F + 1) ~ (n = 1) + X * (mean + sd)))
 \begin{tabular}{lccc}
 \toprule
  &  & \multicolumn{2}{c}{X} \\ \cmidrule(lr){3-4}
@@ -282,7 +272,7 @@ All  & $10$ & $-0.01796$ & $0.5611$ \\
 \bottomrule 
 \end{tabular}
 
-> latex(tabular((i = factor(seq_along(X))) ~ Heading() * 
+> toLatex(tabular((i = factor(seq_along(X))) ~ Heading() * 
 +     identity * (X + A + (F = as.character(F)))))
 \begin{tabular}{lccc}
 \toprule
@@ -301,8 +291,8 @@ i  & X & A & \multicolumn{1}{c}{F} \\
 \bottomrule 
 \end{tabular}
 
-> latex(tabular((X > 0) + (X < 0) + 1 ~ ((n = 1) + X * 
-+     (mean + sd))))
+> toLatex(tabular((X > 0) + (X < 0) + 1 ~ ((n = 1) + 
++     X * (mean + sd))))
 \begin{tabular}{lccc}
 \toprule
  &  & \multicolumn{2}{c}{X} \\ \cmidrule(lr){3-4}
@@ -314,7 +304,7 @@ All  & $10$ & $-0.01796$ & $0.5611$ \\
 \bottomrule 
 \end{tabular}
 
-> latex(tabular(I(X > 0) + I(X < 0) ~ ((n = 1) + mean + 
+> toLatex(tabular(I(X > 0) + I(X < 0) ~ ((n = 1) + mean + 
 +     sd)))
 \begin{tabular}{lccc}
 \toprule
@@ -325,7 +315,7 @@ I(X < 0)  & $10$ & $0.5$ & $0.527$ \\
 \bottomrule 
 \end{tabular}
 
-> latex(tabular((F + 1) ~ (n = 1) + Format(digits = 2) * 
+> toLatex(tabular((F + 1) ~ (n = 1) + Format(digits = 2) * 
 +     X * (mean + sd)))
 \begin{tabular}{lccc}
 \toprule
@@ -345,7 +335,7 @@ All  & $10$ & $-0.018$ & $\phantom{-}0.561$ \\
 +     is_stderr <- (1:length(s)) > length(s)%/%2
 +     s[is_stderr] <-  .... [TRUNCATED] 
 
-> latex(tabular(Format(fmt(digits = 1)) * (F + 1) ~ 
+> toLatex(tabular(Format(fmt(digits = 1)) * (F + 1) ~ 
 +     X * (mean + stderr)))
 \begin{tabular}{lcc}
 \toprule
@@ -358,7 +348,7 @@ All  & $-0.02$ & $( 0.18)$ \\
 \bottomrule 
 \end{tabular}
 
-> latex(tabular((F + 1) ~ X * (Format(digits = 2) * 
+> toLatex(tabular((F + 1) ~ X * (Format(digits = 2) * 
 +     mean + (n = 1) + .Format(1) * sd)))
 \begin{tabular}{lccc}
 \toprule
@@ -371,7 +361,7 @@ All  & $-0.018$ & $10$ & $\phantom{-}0.561$ \\
 \bottomrule 
 \end{tabular}
 
-> latex(tabular((Heading("$\\Phi$") * F + 1) ~ (n = 1) + 
+> toLatex(tabular((Heading("$\\Phi$") * F + 1) ~ (n = 1) + 
 +     Format(digits = 2) * Heading() * X * (mean + sd)))
 \begin{tabular}{lccc}
 \toprule
@@ -383,7 +373,7 @@ All  & $10$ & $-0.018$ & $\phantom{-}0.561$ \\
 \bottomrule 
 \end{tabular}
 
-> latex(tabular(X * F + Heading("near") * X + Heading("far", 
+> toLatex(tabular(X * F + Heading("near") * X + Heading("far", 
 +     nearData = FALSE) * X ~ mean + sd))
 \begin{tabular}{llcc}
 \toprule
@@ -396,7 +386,7 @@ far &   & $-0.01796$ & $0.5611$ \\
 \bottomrule 
 \end{tabular}
 
-> latex(tabular(Justify(r) * (F + 1) ~ Justify(c) * 
+> toLatex(tabular(Justify(r) * (F + 1) ~ Justify(c) * 
 +     (n = 1) + Justify(c, r) * Format(digits = 2) * X * (mean + 
 +     sd)))
 \begin{tabular}{lccc}
@@ -410,9 +400,9 @@ F  & n & mean & \multicolumn{1}{c}{sd} \\
 \bottomrule 
 \end{tabular}
 
-> latex(tabular((Factor(gear, "Gears") + 1) * ((n = 1) + 
+> toLatex(tabular((Factor(gear, "Gears") + 1) * ((n = 1) + 
 +     Percent() + (RowPct = Percent(Equal(gear))) + (ColPct = Percent(Equal(carb)))) ~ 
-+    .... [TRUNCATED] 
++  .... [TRUNCATED] 
 \begin{tabular}{llccccccc}
 \toprule
 & & \multicolumn{6}{c}{Carburetors} & \multicolumn{1}{c}{} \\ \cmidrule(lr){3-8}
@@ -443,8 +433,8 @@ All & n  & $\phantom{00}7$ & $\phantom{0}10$ & $\phantom{00}3$ & $\phantom{0}10$
 
 > gp <- c(1, 1, 2, 2)
 
-> latex(tabular((Factor(gp) + 1) ~ weighted.mean * x * 
-+     Arguments(w = wt)))
+> toLatex(tabular((Factor(gp) + 1) ~ weighted.mean * 
++     x * Arguments(w = wt)))
 \begin{tabular}{lc}
 \toprule
  & \multicolumn{1}{c}{weighted.mean} \\ 
@@ -461,7 +451,7 @@ All  & $3.453$ \\
 > df <- data.frame(Label = LETTERS[1:9], Group = rep(letters[1:3], 
 +     each = 3), Value = rnorm(9), stringsAsFactors = TRUE)
 
-> latex(tabular(Label ~ Group * Value * mean, data = df[1:6, 
+> toLatex(tabular(Label ~ Group * Value * mean, data = df[1:6, 
 +     ]))
 \begin{tabular}{lccc}
 \toprule
@@ -482,7 +472,7 @@ I  & $\phantom{0000}\phantom{-}NaN$ & $\phantom{000}\phantom{-}NaN$ & $NaN$ \\
 \bottomrule 
 \end{tabular}
 
-> latex(tabular(Label ~ Group * Value * mean * DropEmpty(empty = "."), 
+> toLatex(tabular(Label ~ Group * Value * mean * DropEmpty(empty = "."), 
 +     data = df[1:6, ]))
 \begin{tabular}{lcc}
 \toprule
@@ -500,7 +490,7 @@ F  & . & $-1.0628$ \\
 \bottomrule 
 \end{tabular}
 
-> latex(tabular(Species ~ Heading() * mean * All(iris), 
+> toLatex(tabular(Species ~ Heading() * mean * All(iris), 
 +     data = iris))
 \begin{tabular}{lcccc}
 \toprule
@@ -514,7 +504,7 @@ virginica  & $6.588$ & $2.974$ & $5.552$ & $2.026$ \\
 
 > df <- mtcars[1:10, ]
 
-> latex(tabular(Factor(cyl) * Factor(gear) * AllObs(df) ~ 
+> toLatex(tabular(Factor(cyl) * Factor(gear) * AllObs(df) ~ 
 +     rownames(df) + mpg, data = df))
 \begin{tabular}{llcc}
 \toprule
@@ -535,7 +525,7 @@ cyl & gear & rownames(df) & \multicolumn{1}{c}{mpg} \\
 
 > rownum <- with(mtcars, RowNum(list(cyl, gear)))
 
-> latex(tabular(Factor(cyl) * Factor(gear) * I(rownum) ~ 
+> toLatex(tabular(Factor(cyl) * Factor(gear) * I(rownum) ~ 
 +     mpg * AllObs(mtcars, within = list(cyl, gear, rownum)), data = mtcars))
 \begin{tabular}{llccccc}
 \toprule
@@ -557,7 +547,7 @@ cyl & gear & \multicolumn{5}{c}{mpg} \\
 
 > rownum <- with(mtcars, RowNum(list(cyl, gear), perrow = 2))
 
-> latex(tabular(Factor(cyl) * Factor(gear) * AllObs(mtcars, 
+> toLatex(tabular(Factor(cyl) * Factor(gear) * AllObs(mtcars, 
 +     within = list(cyl, gear, rownum)) ~ mpg * I(rownum), data = mtcars))
 \begin{tabular}{llcccccc}
 \toprule
@@ -580,7 +570,7 @@ cyl & gear & \multicolumn{6}{c}{mpg} \\
 \bottomrule 
 \end{tabular}
 
-> latex(tabular(Species + Hline(2:5) + 1 ~ Heading() * 
+> toLatex(tabular(Species + Hline(2:5) + 1 ~ Heading() * 
 +     mean * All(iris), data = iris))
 \begin{tabular}{lcccc}
 \toprule
@@ -596,7 +586,7 @@ All  & $5.843$ & $3.057$ & $3.758$ & $1.199$ \\
 
 > stderr <- function(x) sd(x)/sqrt(length(x))
 
-> latex(tabular((Species + 1) ~ All(iris) * PlusMinus(mean, 
+> toLatex(tabular((Species + 1) ~ All(iris) * PlusMinus(mean, 
 +     stderr, digits = 1), data = iris))
 \begin{tabular}{lcccccccc}
 \toprule
@@ -615,9 +605,9 @@ All  & \multicolumn{1}{r@{}}{$5.84$} & \multicolumn{1}{@{ $\pm$ }l}{$0.07$} & \m
 > ucl <- function(x) mean(x) + qt(0.975, df = length(x) - 
 +     1) * stderr(x)
 
-> latex(tabular((Species + 1) ~ All(iris) * Paste(lcl, 
+> toLatex(tabular((Species + 1) ~ All(iris) * Paste(lcl, 
 +     ucl, digits = 2, head = "95\\% CI", sep = ",", prefix = "[", 
-+     postfix = "]"), data .... [TRUNCATED] 
++     postfix = "]"), da .... [TRUNCATED] 
 \begin{tabular}{lcccccccc}
 \toprule
  & \multicolumn{2}{c}{Sepal.Length} & \multicolumn{2}{c}{Sepal.Width} & \multicolumn{2}{c}{Petal.Length} & \multicolumn{2}{c}{Petal.Width} \\ \cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}\cmidrule(lr){8-9}
@@ -632,7 +622,7 @@ All  & \multicolumn{1}{@{\hspace{\tabcolsep}[}c@{,}}{$5.71$} & \multicolumn{1}{c
 
 > subset <- 1:15
 
-> latex(tabular(RowFactor(subset, "$i$", spacing = 5) ~ 
+> toLatex(tabular(RowFactor(subset, "$i$", spacing = 5) ~ 
 +     All(iris[subset, ], factor = as.character) * Heading() * 
 +         identity))
 \begin{tabular}{lccccc}
@@ -664,9 +654,9 @@ $i$  & Sepal.Length & Sepal.Width & Petal.Length & Petal.Width & \multicolumn{1}
 
 > dat$Response <- rnorm(12)
 
-> latex(tabular(RowFactor(Block, spacing = 1) * RowFactor(Treatment, 
+> toLatex(tabular(RowFactor(Block, spacing = 1) * RowFactor(Treatment, 
 +     spacing = 1, space = 0.5) * Factor(Subset) ~ Response * Heading() * 
-+     .... [TRUNCATED] 
++   .... [TRUNCATED] 
 \begin{tabular}{cccc}
 \toprule
 Block & Treatment & Subset & \multicolumn{1}{c}{Response} \\ 
@@ -688,9 +678,9 @@ Block & Treatment & Subset & \multicolumn{1}{c}{Response} \\
 
 > subset <- 1:50
 
-> latex(tabular(RowFactor(subset, "$i$", spacing = 5, 
+> toLatex(tabular(RowFactor(subset, "$i$", spacing = 5, 
 +     suppressfirst = FALSE) ~ All(iris[subset, ], factor = as.character) * 
-+     Heading() *  .... [TRUNCATED] 
++     Heading()  .... [TRUNCATED] 
 \begin{longtable}{lccccc}
 \caption{This table crosses page boundaries.}\\
               \toprule
@@ -751,8 +741,8 @@ $i$  & Sepal.Length & Sepal.Width & Petal.Length & Petal.Width & \multicolumn{1}
 
 > subset <- 1:10
 
-> latex(tabular(Factor(subset) ~ All(iris[subset, ], 
-+     factor = as.character) * Heading() * identity, suppress = 3))
+> toLatex(tabular(Factor(subset) ~ All(iris[subset, 
++     ], factor = as.character) * Heading() * identity, suppress = 3))
 \begin{tabular}{ccccc}
 \toprule
    Sepal.Length & Sepal.Width & Petal.Length & Petal.Width & \multicolumn{1}{c}{Species} \\ 
@@ -770,8 +760,8 @@ $i$  & Sepal.Length & Sepal.Width & Petal.Length & Petal.Width & \multicolumn{1}
 \bottomrule 
 \end{tabular}
 
-> latex(tabular(Multicolumn(Species, width = 3, levelnames = paste("\\textit{Iris", 
-+     levels(Species), "}")) * (mean + sd) ~ All(iris), data = ir .... [TRUNCATED] 
+> toLatex(tabular(Multicolumn(Species, width = 3, levelnames = paste("\\textit{Iris", 
++     levels(Species), "}")) * (mean + sd) ~ All(iris), data =  .... [TRUNCATED] 
 \begin{tabular}{llcccc}
 \toprule
  &  & Sepal.Length & Sepal.Width & Petal.Length & \multicolumn{1}{c}{Petal.Width} \\ 
@@ -787,7 +777,10 @@ $i$  & Sepal.Length & Sepal.Width & Petal.Length & Petal.Width & \multicolumn{1}
 
 > df <- data.frame(A = factor(c("$", "\\")), B_label = 1:2)
 
-> latex(tabular(mean ~ Factor(A) * All(df), data = df))
+> options(tables.texify = TRUE)
+
+> toLatex(tabular(mean ~ Factor(A) * All(df), data = df))
+Loading required namespace: Hmisc
 \begin{tabular}{lcc}
 \toprule
  & \multicolumn{2}{c}{A} \\ \cmidrule(lr){2-3}
@@ -808,7 +801,7 @@ mean  & $1$ & $2$ \\
 
 > Mean <- function(x) base::mean(x, na.rm = TRUE)
 
-> latex(tabular(Mean ~ a + b, data = dat))
+> toLatex(tabular(Mean ~ a + b, data = dat))
 \begin{tabular}{lcc}
 \toprule
   & a & \multicolumn{1}{c}{b} \\ 
@@ -817,7 +810,7 @@ Mean  & $2$ & $2.5$ \\
 \bottomrule 
 \end{tabular}
 
-> latex(tabular(mean ~ a + b, data = na.omit(dat)))
+> toLatex(tabular(mean ~ a + b, data = na.omit(dat)))
 \begin{tabular}{lcc}
 \toprule
   & a & \multicolumn{1}{c}{b} \\ 
@@ -826,7 +819,7 @@ mean  & $2$ & $2$ \\
 \bottomrule 
 \end{tabular}
 
-> latex(tabular(Mean ~ (1 + Heading(Complete) * complete.cases(dat)) * 
+> toLatex(tabular(Mean ~ (1 + Heading(Complete) * complete.cases(dat)) * 
 +     (a + b), data = dat))
 \begin{tabular}{lcccc}
 \toprule
@@ -839,7 +832,7 @@ Mean  & $2$ & $2.5$ & $2$ & $2$ \\
 
 > A <- factor(dat$a)
 
-> latex(tabular(A + 1 ~ (n = 1)))
+> toLatex(tabular(A + 1 ~ (n = 1)))
 \begin{tabular}{lc}
 \toprule
 A  & \multicolumn{1}{c}{n} \\ 
@@ -853,7 +846,7 @@ All  & $4$ \\
 
 > A <- factor(dat$a, exclude = NULL)
 
-> latex(tabular(A + 1 ~ (n = 1)))
+> toLatex(tabular(A + 1 ~ (n = 1)))
 \begin{tabular}{lc}
 \toprule
 A  & \multicolumn{1}{c}{n} \\ 
@@ -875,7 +868,7 @@ All  & $4$ \\
 > tab <- tabular((Factor(p) * Factor(a) + 1) ~ (N = 1) + 
 +     (b + c) * (mean + sd), data = q)
 
-> latex(tab)
+> toLatex(tab)
 \begin{tabular}{llccccc}
 \toprule
 & &  & \multicolumn{2}{c}{b} & \multicolumn{2}{c}{c} \\ \cmidrule(lr){4-5}\cmidrule(lr){6-7}
@@ -891,7 +884,7 @@ B & 1  & $\phantom{0}0$ & $\phantom{00}NaN$ & $\phantom{000}NA$ & $\phantom{00}N
 \bottomrule 
 \end{tabular}
 
-> latex(tab[tab[, 1] > 0, ])
+> toLatex(tab[tab[, 1] > 0, ])
 \begin{tabular}{llccccc}
 \toprule
 & &  & \multicolumn{2}{c}{b} & \multicolumn{2}{c}{c} \\ \cmidrule(lr){4-5}\cmidrule(lr){6-7}
@@ -912,7 +905,7 @@ B & 2  & $10$ & $14.40$ & $2.836$ & $56.30$ & $7.889$ \\
 > for (sub in c("A", "B")) tab <- rbind(tab, tabular(formula, 
 +     data = subset(q, p == sub)))
 
-> latex(tab)
+> toLatex(tab)
 \begin{tabular}{llccccc}
 \toprule
 & &  & \multicolumn{2}{c}{b} & \multicolumn{2}{c}{c} \\ \cmidrule(lr){4-5}\cmidrule(lr){6-7}
@@ -936,7 +929,7 @@ Attributes:  dim, justification, colnamejust, justify, suppress, nearData, class
 
 > colLabels(tab) <- labs
 
-> latex(tab)
+> toLatex(tab)
 \begin{tabular}{llccccc}
 \toprule
 & &  & \multicolumn{2}{c}{New label} & \multicolumn{2}{c}{c} \\ \cmidrule(lr){4-5}\cmidrule(lr){6-7}
@@ -965,7 +958,8 @@ B & 2  & $10$ & $14.4$ & $2.836$ & $56.3$ & $7.889$ \\
 \bottomrule 
 \end{tabu}
 
+
  *** Run successfully completed ***
 > proc.time()
    user  system elapsed 
-  3.259   0.113   3.369 
+  3.397   0.190   3.608 

@@ -133,3 +133,7 @@
       Fixed incompatibility with new version of fancyvrb.  
       (Thanks to Prof. Brian Ripley for working out the
       solution.)
+      Fixed incompatibility with rmarkdown/knitr new version.
+      
+0.9:
+      Reduced dependence on Hmisc.
