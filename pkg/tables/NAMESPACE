@@ -4,7 +4,8 @@ export(tabular, htmlNumeric, labelSubset, latexNumeric, PlusMinus,
        as.tabular, writeCSS,
        rowLabels, colLabels, "rowLabels<-", "colLabels<-",
        toKable, knit_print.tabular,
-       toLatex, toHTML, html.tabular, latex.tabular)
+       toLatex, toHTML, html.tabular, latex.tabular,
+       latexTable)
 
 # pseudo-function exports; not meant to be called, but meant to make the checks happy
 export(Format, Heading, Justify, Percent, Arguments, DropEmpty)
@@ -33,4 +34,4 @@ S3method(knit_print, tabular)
 importFrom("stats", "as.formula") 
 importFrom("utils", "localeToCharset", "write.csv", "write.table",
 	   "capture.output")
-importFrom("knitr", "knit_print", "opts_knit")
+importFrom("knitr", "kable", "knit_print", "opts_knit")
