@@ -30,7 +30,8 @@ options(width=60)
 \title{The \pkg{tables} Package\footnote{This 
 vignette  was built using \pkg{tables} version 
 \Sexpr{packageDescription("tables")$Version}.  It is written in %$ 
-Sweave, and intended to show the same content as the \url{knitrTables.pdf} vignette that is written in R Markdown.}}
+Sweave, and intended to show the same content as the 
+\url{knitrTables.pdf} vignette that is written in R Markdown.}}
 
 \author{Duncan Murdoch}
 

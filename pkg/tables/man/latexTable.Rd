@@ -11,7 +11,7 @@ wraps the \code{\link{tabular}} result in the result of a call to the
 \code{knitr::\link[knitr]{kable}} function.
 }
 \usage{
-latexTable(table, format = "latex", ...)
+latexTable(table, format = "latex", longtable = FALSE, ...)
 }
 \arguments{
   \item{table}{
@@ -21,10 +21,7 @@ result of a call to that function.
   \item{format}{
 Currently only \code{"latex"} format output is supported.
 }
-  \item{longtable}{
-\code{\link[knitr]{kable}} argument; see below.
-  }
-  \item{\dots}{
+  \item{longtable, \dots}{
 Additional arguments to be passed to the \code{knitr::\link[knitr]{kable}}
 function.  See details below.
 }
