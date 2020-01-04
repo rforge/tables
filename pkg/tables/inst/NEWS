@@ -141,5 +141,6 @@
 0.9:
       Reduced dependence on Hmisc.
       
-0.9.1:
+0.9.2:
       Added latexTable() function, to provide captions, labels, etc.
+      Added knitrTable vignette.

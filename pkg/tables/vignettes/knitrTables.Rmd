@@ -1,14 +1,18 @@
 ---
-title: "Tables in knitr"
+title: "Tables in R Markdown"
 author: "Duncan Murdoch"
 date: "13/05/2019"
 output: 
   pdf_document:
     toc: true
+    toc_depth: 3
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteIndexEntry{Tables in knitr}
-  \usepackage[utf8]{inputenc}
+  %\VignetteIndexEntry{Tables in R Markdown}
+bibliography: tables.bib
+header-includes: 
+  \usepackage{booktabs}
+  \usepackage{tabu}
 ---
 
 ```{r setup, include=FALSE}
@@ -17,13 +21,16 @@ options(width=60)
 ```
 
 This 
-vignette  was built using `tables` version `r packageDescription("tables")$Version`.
+vignette  was built using `tables` version `r packageDescription("tables")$Version`.  It is intended to 
+show the same content as the \url{tables.pdf} vignette that
+was written in Sweave, but with R Markdown source code.
 
 # Introduction
 
 This is a short introduction to the `tables` package.  Inspired by my 20 year old memories
 of SAS PROC TABULATE, I decided to write a simple utility to create nice looking tables in Sweave 
-documents.  For example, we might display summaries of some of Fisher's iris data using the
+documents.  (It now also works in R Markdown documents,
+as this vignette illustrates.) For example, we might display summaries of some of Fisher's iris data using the
 code
 ```{r echo=FALSE}
 library(tables)
@@ -113,7 +120,7 @@ operate on a vector and produce a single value, as `mean` and
 those functions to the two different variables and the subsets of the
 dataset.
 
-## Reference
+# Reference
 
 For the examples below we use the following definitions:
 ```{r}
@@ -164,7 +171,7 @@ The value returned is a list-mode matrix corresponding to the entries in the tab
 with a number of attributes to help with formatting.  See the `?tabular` help page
 for more details.
 
-### `format(), print(), toLatex()`
+### `format(), print(), toLatex()` {#sec:formatsyntax}
 
 ```
 format(x, digits=4, justification="n", ...) 
@@ -189,7 +196,7 @@ for use in Sweave documents like this one.
 - `options] A list of options to pass to `table_options()`.  These
 will be set only for the duration of the call to `toLatex()`.
 
-### `as.matrix(), write.csv.tabular(), write.table.tabular()`
+### `as.matrix(), write.csv.tabular(), write.table.tabular()` {#sec:csv}
 
 ```
 as.matrix(x, format = TRUE, 
@@ -225,7 +232,7 @@ more elaborate labelling is wanted, use a `tabular` object as the
 `like` argument.  The labelling for `like` will be used on the
 newly constructed result.
 
-### `table_options(), booktabs()`
+### `table_options(), booktabs()` {#sec:booktabs}
 
 
 The `table_options()` function sets a number of formatting defaults for the `toLatex()`
@@ -296,7 +303,7 @@ toLatex(tabular(1 ~ (n=1) + Format(digits=2)*
 ```
 
 
-### `latexNumeric()`
+### `latexNumeric()` {#sec:latexNumeric}
 
 ```{r eval=FALSE}
 latexNumeric(chars, minus = TRUE, leftpad = TRUE, rightpad=TRUE, 
@@ -396,7 +403,7 @@ R parses table formulas into sums, products, and bindings separated by the tilde
 operators are other expressions.  Other than the pseudo-functions described in section \ref{sec:pseudo}, these are evaluated
 and the actions depend on the type of the resulting value.  
 
-### Closures or other functions
+### Closures or other functions {#sec:closures}
 
 If the expression evaluates to a function (e.g. it is the name of a function), then that function
 becomes the summary statistic to be displayed.  The summary statistic should take a vector of values as input, and return a single 
@@ -447,7 +454,7 @@ then it will be replaced in the table formula by its result.  This allows compli
 to be saved and re-used.  For examples, see section \ref{sec:tableformulas}.
 
 
-### Other vectors
+### Other vectors {#sec:othervectors}
 
 
 If the expression evaluates to something other than the above, then it
@@ -1056,7 +1063,7 @@ toLatex( tabular( Multicolumn(Species, width=3,
 ```
 
 
-## Further Details
+# Further Details
 
 ## Formatting
 \label{sec:formatdetails}
@@ -1190,7 +1197,7 @@ q <- data.frame(p = rep(c("A","B"),each=10,len=30),
                            c = round(runif(30,40,70)),
 		stringsAsFactors = FALSE)
 tab <- tabular((Factor(p)*Factor(a)+1) 
-                        ~ (N = 1) + (b + c)*(mean+sd),data=q)
+                ~ (N = 1) + (b + c)*(mean+sd), data = q)
 toLatex(tab)
 ```
 
@@ -1265,12 +1272,33 @@ toKable(tab) %>%
 
 See the HTML vignette (which is written in rmarkdown) for more discussion and examples.
 
-## Acknowledgments
+## Captions, labels, etc.
+
+LaTeX breaks the description of tables into two parts:  the 
+`tabular` environment holding the data, and the optional 
+`table` environment surrounding it, where captions, labels, where to place 
+the table in the document, etc. are all specified.  The `tables` package concentrates
+on the details of the `tabular` part, because I didn't want to duplicate
+the myriad options in LaTeX to set up the `table` wrapper.  However,
+others are not so lazy, and Yihui Xie's `knitr` package includes
+the `kable()` function which does these things.  (It is much
+less flexible about the actual contents, however.)  Rather than copying
+all his code, I have added the `latexTable` function.  It uses
+`kable()` to produce a dummy table, then replaces the `tabular`
+part with the result of the `tabular()` function from this package.  For example, this code produces Table \ref{tab:sepals}:
+```{r}
+latexTable(tabular((Species + 1) ~ (n=1) + Format(digits=2)*
+                   (Sepal.Length + Sepal.Width)*(mean + sd), 
+                   data=iris),
+           caption = "Iris sepal data", label = "sepals")
+```
+which should have floated to the top or bottom of page 
+\pageref{tab:sepals}.
+
+# Acknowledgments
 
 I gratefully acknowledge helpful suggestions and hints from Rich
 Heiberger, Frank Harrell, Dieter Menne, Marius Hofert, Jeff Newmiller and Jeffrey
 Miller.  Hao Zhu was extremely helpful in adding the `kableExtra` support.
 
-\bibliography{tables}
-
-\end{document}
+# References
