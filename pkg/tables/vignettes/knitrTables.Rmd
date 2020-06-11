@@ -3,9 +3,10 @@ title: "Tables in R Markdown"
 author: "Duncan Murdoch"
 date: "13/05/2019"
 output: 
-  pdf_document:
+  bookdown::pdf_document2:
     toc: true
     toc_depth: 3
+    link-citations: yes
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteIndexEntry{Tables in R Markdown}
@@ -20,14 +21,16 @@ knitr::opts_chunk$set(echo = TRUE)
 options(width=60)
 ```
 
-This 
-vignette  was built using `tables` version `r packageDescription("tables")$Version`.  It is intended to 
-show the same content as the \url{tables.pdf} vignette that
-was written in Sweave, but with R Markdown source code.
-
 # Introduction
 
-This is a short introduction to the `tables` package.  Inspired by my 20 year old memories
+This 
+vignette  was built using `tables` version `r packageDescription("tables")$Version`.  It is intended to 
+show the same content as the `tables.pdf` vignette that
+was written in Sweave, but with R Markdown source code.
+This has allowed a few simplifications; see Section
+\@ref(sec:knitr) for a description of them.
+
+It is a short introduction to the `tables` package.  Inspired by my 20 year old memories
 of SAS PROC TABULATE, I decided to write a simple utility to create nice looking tables in Sweave 
 documents.  (It now also works in R Markdown documents,
 as this vignette illustrates.) For example, we might display summaries of some of Fisher's iris data using the
@@ -43,13 +46,19 @@ tabular( (Species + 1) ~ (n=1) + Format(digits=2)*
 You can also pass the output through the `toLatex()` function
 to produce \LaTeX\ output,
 which when processed by `pdflatex` will produce the following table:
-```{r echo=FALSE, results="asis"}
+```{r echo=FALSE, results='asis'}
 toLatex(
   tabular( (Species + 1) ~ (n=1) + Format(digits=2)*
            (Sepal.Length + Sepal.Width)*(mean + sd), data=iris )
   )
 ```
-
+However, if you are using `rmarkdown` or `knitr` (as this 
+document does), `toLatex()` is not necessary.  Just execute 
+```{r}
+table_options(knit_print = TRUE)
+```
+at the start of your document, and conversion to \LaTeX\ will
+be done automatically when needed.
 	
 If you prefer the style of table that the \LaTeX\ `booktabs` package [@booktabs]
 produces, you can choose
@@ -59,8 +68,7 @@ booktabs()
 ```
 for the rest of this document.  This gives
 
-```{r echo=FALSE}
-table_options(knit_print = TRUE)
+```{r irisbook,echo=FALSE}
 saved.options <- table_options()
 invisible(booktabs())
 tabular( (Species + 1) ~ (n=1) + Format(digits=2)*
@@ -68,27 +76,27 @@ tabular( (Species + 1) ~ (n=1) + Format(digits=2)*
 ```
 
 
-Details on `booktabs()` are given in section \ref{sec:booktabs} below.
+Details on `booktabs()` are given in section \@ref(sec:booktabs) below.
 
 There is also the `toHTML` function and `html.tabular`
 method for the `Hmisc::html()` generic;
-they produce output in HTML format.  Finally, see section \ref{sec:csv} for other 
+they produce output in HTML format.  Finally, see section \@ref(sec:csv) for other 
 output formats.
 
 The idea of a table in the `tables` package is a rectangular array of values, with
 each row and column labelled, and possibly with groups of rows and groups of columns
-also labelled.  These arrays are specified by ``table formulas''.
+also labelled.  These arrays are specified by "table formulas".
 
 Table formulas are R formula objects, with the  rows of the table
 described before the tilde (`"~"`), and the columns after.   Each of
 those is an expression containing `"*"`, `"+"`, `"="`, as
 well as functions, function calls and variables, and parentheses for
 grouping.  There are also various directives included in the formula,
-entered as ``pseudo-functions'', i.e. expressions that look like function
+entered as "pseudo-functions", i.e. expressions that look like function
 calls but which are interpreted by the `tabular()` function.
 
 For example, in the formula 
-```
+```r
 (Species + 1) ~ (n=1) + Format(digits=2)*
          (Sepal.Length + Sepal.Width)*(mean + sd)
 ```
@@ -97,20 +105,20 @@ this says rows for `Species` should be followed by rows for `1`.
 
 In the `iris` dataframe, `Species` is a factor, so the rows for it correspond to its levels.
 
-The `1` is a place-holder, which in this context will mean ``all groups''.
+The `1` is a place-holder, which in this context will mean "all groups".
 
 The columns in the table are defined by
-```
+```r
 (n=1) + Format(digits=2)*(Sepal.Length + Sepal.Width)*(mean + sd)
 ```
 Again, summation corresponds to concatenation, so the first column corresponds to `(n=1)`.
-This is another use of the placeholder, but this time it is labelled as `n`.  
+This is another use of the placeholder, but this time it is labelled as `n`.
 Since we haven't specified any other statistic to use, the first
 column contains the counts of values in the dataframe in each category.
 
 The second term in the column formula is a product of three factors.
 The first, `Format(digits=2)`, is a pseudo-function to set the format for all of the entries to
-come.  (For more on formats, see section \ref{sec:formats} below.)  The second factor, `(Sepal.Length
+come.  (For more on formats, see section \@ref(sec:formats) below.)  The second factor, `(Sepal.Length
 + Sepal.Width)`, is a concatenation of two variables.  Both of these
 variables are numeric vectors in `iris`, and they each become the
 variable to be analyzed, in turn.  The last factor, `(mean + sd)`
@@ -123,7 +131,7 @@ dataset.
 # Reference
 
 For the examples below we use the following definitions:
-```{r}
+```{r results = 'markup'}
 set.seed(100)
 X <- rnorm(10)
 X
@@ -137,7 +145,7 @@ F
 
 ### `tabular()`
 
-```
+```r
 tabular(table, ...)
 tabular.default(table, ...)
 tabular.formula(table, data=parent.frame(), n, suppressLabels=0, ...) 
@@ -151,18 +159,18 @@ method has 4 arguments plus `...`, but usually only the first two
 are used, and a warning is issued if anything is passed in the
 `...` arguments.
 
-- `table] The `table` argument is the table formula, described in detail below.
+- `table`: The `table` argument is the table formula, described in detail below.
 
-- `data] The `data` argument is a dataframe or environment in which to look for 
-the data referenced by the table.  
+- `data`: The `data` argument is a dataframe or environment in which to look for 
+the data referenced by the table.
 
-- `n]  The `tabular` function needs to know the length of vectors on which it operates, because 
+- `n`: The `tabular` function needs to know the length of vectors on which it operates, because 
 some formulas (e.g. `1 ~ 1`) contain no data.  Normally `n` is taken as the
 number of rows in `data`, or the length of the first referenced object in the formula,
 but sometimes the user will need to specify it.  Once specified, it can't be modified:
 all data in the table should be the same length.
 
-- `suppressLabels] By default, `tabular` adds a row or column label for each term, but
+- `suppressLabels`: By default, `tabular` adds a row or column label for each term, but
 this does sometimes make the table messy.  Setting `suppressLabels` to a positive
 integer will cause that many labels to be suppressed at the start of each term.  The
 pseudo-function `Heading()` can achieve the same effect, one term at a time.
@@ -173,7 +181,7 @@ for more details.
 
 ### `format(), print(), toLatex()` {#sec:formatsyntax}
 
-```
+```r
 format(x, digits=4, justification="n", ...) 
 print(x, ...)
 toLatex(x, file="", options=NULL,  ...)
@@ -184,43 +192,43 @@ The `tables` package provides methods for the `format()`, `print()`
 and `utils::toLatex()` generics.
 The arguments are:
 
-- `x] The tabular object returned from `tabular()`.
-- `digits] The default number of digits to use when formatting.
-- `justification] The default text justification to use when printing.  For text display, the
+- `x`: The tabular object returned from `tabular()`.
+- `digits`: The default number of digits to use when formatting.
+- `justification`: The default text justification to use when printing.  For text display, the
 recognized values are `"n", "l", "c", "r"`, standing for none, left, center and right
 justification respectively.  For \LaTeX\ the justification is 
-specified via the `table_options()` function (section \ref{sec:booktabs}).
-- `file] The default method for the `Hmisc::latex()` generic writes the \LaTeX\ code
+specified via the `table_options()` function (section \@ref(sec:booktabs)).
+- `file`: The default method for the `Hmisc::latex()` generic writes the \LaTeX\ code
 to a file; `latex.tabular()` can optionally do the same, but it defaults to writing to screen,
 for use in Sweave documents like this one.
-- `options] A list of options to pass to `table_options()`.  These
+- `options`: A list of options to pass to `table_options()`.  These
 will be set only for the duration of the call to `toLatex()`.
 
 ### `as.matrix(), write.csv.tabular(), write.table.tabular()` {#sec:csv}
 
-```
+```r
 as.matrix(x, format = TRUE, 
     rowLabels = TRUE, colLabels = TRUE, justification = "n", ...)
 write.csv.tabular(x, file = "", justification = "n", row.names=FALSE, 
     write.options=list(), ...)
 write.table.tabular(x, file="", 
     justification = "n", row.names=FALSE, col.names=FALSE,
-    write.options=list(), ...)   
+    write.options=list(), ...) 
 ```
 
 These functions export tables for further computations.  The arguments are:
 
-- `x] The tabular object.
-- `format] Whether to format the entries.  See the help page for alternatives.
-- `rowLabels, colLabels] If formatting, whether to include the labels or not.
-- `justification] The default text justification to use when formatting.
-- `file] Where to write the output.
-- `row.names,col.names, write.options] Additional parameters to pass
+- `x`: The tabular object.
+- `format`: Whether to format the entries.  See the help page for alternatives.
+- `rowLabels, colLabels`: If formatting, whether to include the labels or not.
+- `justification`: The default text justification to use when formatting.
+- `file`: Where to write the output.
+- `row.names,col.names, write.options`: Additional parameters to pass
 to `write.csv()` or `write.table()`.
 
 ### `as.tabular()`
 
-```
+```r
 as.tabular(x, ...)
 as.tabular.default(x, like=NULL, ...)
 as.tabular.data.frame(x, ...)
@@ -238,25 +246,25 @@ newly constructed result.
 The `table_options()` function sets a number of formatting defaults for the `toLatex()`
 method:
 
-- `justification] This is the default justification for data columns and their headers.
+- `justification`: This is the default justification for data columns and their headers.
 Any justification string will be accepted; it should be
 one that the \LaTeX\ \verb+\tabular+ environment (or substitute) accepts.  If a vector
 of strings is specified they will be recycled across the columns of the table.
-- `rowlabeljustification] This is the default justification for row labels.  A vector of
+- `rowlabeljustification`: This is the default justification for row labels.  A vector of
 strings will be recycled across the row label columns.
-- `tabular] The environment to use in \LaTeX.  Alternatives to `"tabular"` such as
+- `tabular`: The environment to use in \LaTeX.  Alternatives to `"tabular"` such as
 `"longtable"` can be used here.  Those often also need 
 modifications within the table; the `Literal()` (section \ref{sec:Literal`) function may be
 helpful.
-- `toprule, midrule, bottomrule] The \LaTeX\ macros to draw the top, middle and bottom lines
+- `toprule, midrule, bottomrule`: The \LaTeX\ macros to draw the top, middle and bottom lines
 in the table.  By default these are all \verb!"\\hline"!.
-- `titlerule] An optional \LaTeX\ macro to draw a line under multicolumn titles.
-- `doBegin, doHeader, doBody, doFooter, doEnd]
+- `titlerule`: An optional \LaTeX\ macro to draw a line under multicolumn titles.
+- `doBegin, doHeader, doBody, doFooter, doEnd`:
 These logical values control the inclusion of specific parts of
 the output table.
 
 The defaults are
-```{r echo=FALSE>>=
+```{r echo=FALSE}
 saved.options
 ```
 Some options only apply to HTML output; see the help page 
@@ -264,22 +272,18 @@ Some options only apply to HTML output; see the help page
 
 If you are using the \LaTeX\ `booktabs` package, the `booktabs()` function will
 set different options.  Currently those are:
-```{r echo=FALSE>>=
+```{r echo=FALSE}
 table_options()[c("toprule", "midrule", "bottomrule", "titlerule")]
 ```
 
 The earlier table of iris data was produced using
-```{r eval=FALSE>>=
-```{r irisbook>>
-```
-
-```{r echo=FALSE>>=
-```{r irisbook>>
+```{r irisbook, eval=FALSE}
 ```
 
 
 We can use the `doXXXX` options to insert raw \LaTeX\ into a table:
-```{r split, eval=FALSE>>=
+
+```{r split, eval=FALSE}
 toLatex(tabular(Species ~ (n=1) + Format(digits=2)*
          (Sepal.Length + Sepal.Width)*(mean + sd), data=iris),
       options=list(doFooter=FALSE, doEnd=FALSE))
@@ -290,7 +294,7 @@ toLatex(tabular(1 ~ (n=1) + Format(digits=2)*
          (Sepal.Length + Sepal.Width)*(mean + sd), data=iris),
       options=list(doBegin=FALSE, doHeader=FALSE))
 ```
-```{r echo=FALSE>>=
+```{r echo=FALSE, results = "asis"}
 toLatex(tabular(Species ~ (n=1) + Format(digits=2)*
          (Sepal.Length + Sepal.Width)*(mean + sd), data=iris),
       options=list(doFooter=FALSE, doEnd=FALSE))
@@ -302,6 +306,9 @@ toLatex(tabular(1 ~ (n=1) + Format(digits=2)*
       options=list(doBegin=FALSE, doHeader=FALSE))
 ```
 
+Note that we need explicit `toLatex()` calls to access
+these options; in turn, that means the `knitr` chunk options
+require `results = "asis"`.
 
 ### `latexNumeric()` {#sec:latexNumeric}
 
@@ -321,18 +328,18 @@ they were aligned in `chars`).
 
 The arguments are:
 
-- `chars]
+- `chars`:
 A character vector of formatted numeric values.
-- `minus]
+- `minus`:
 Whether to pad positive cases with spacing of the same width as a minus sign.  If `TRUE`
 and some entries are negative, then all positive entries will be padded.
-- `leftpad, rightpad]
+- `leftpad, rightpad`:
 Whether to pad cases that have leading or trailing blanks with spacing matching a digit width per space.
 If `leftpad=TRUE`, leading blanks will be converted to spaces the same width as a digit 0.  (If
 `minus=TRUE`, one leading blank may have been consumed in the sign padding.)
 The `rightpad` argument handles trailing blanks similarly.
 
-- `mathmode]
+- `mathmode`:
 Whether to wrap the result in dollar signs, so \LaTeX\ will render minus signs properly.
 
 
@@ -349,7 +356,7 @@ $e_2$.
 Example:
 
 ```{r}
-toLatex( tabular(F + 1 ~ 1) )
+tabular(F + 1 ~ 1)
 ```
 
 
@@ -365,7 +372,7 @@ is equivalent to $e_1*e_3 + e_1*e_4 + e_2*e_3 + e_2*e_4$.
 Example:
 
 ```{r}
-toLatex( tabular( X*F*(mean + sd) ~ 1 ) )
+tabular( X*F*(mean + sd) ~ 1 )
 ```
 
 
@@ -378,7 +385,7 @@ each row value applies to each column.
 Example:
 
 ```{r}
-toLatex( tabular( X*F ~ mean + sd ) )
+tabular( X*F ~ mean + sd )
 ```
 
 
@@ -390,10 +397,10 @@ $e_2$ to a displayed version of $e_1$.  It is an abbreviation for
 operator precedence than any other operator, we usually put
 parentheses around these expressions, i.e. $(e_1 = e_2)$.
 
-Example: `F` is renamed to ``Newname''.
+Example: `F` is renamed to `Newname`.
 
 ```{r}
-toLatex( tabular( X*(Newname=F) ~ mean + sd ) )
+tabular( X*(Newname=F) ~ mean + sd )
 ```
 
 
@@ -401,14 +408,14 @@ toLatex( tabular( X*(Newname=F) ~ mean + sd ) )
 
 R parses table formulas into sums, products, and bindings separated by the tilde formula operator.  What comes between the
 operators are other expressions.  Other than the pseudo-functions described in section \ref{sec:pseudo}, these are evaluated
-and the actions depend on the type of the resulting value.  
+and the actions depend on the type of the resulting value.
 
 ### Closures or other functions {#sec:closures}
 
 If the expression evaluates to a function (e.g. it is the name of a function), then that function
 becomes the summary statistic to be displayed.  The summary statistic should take a vector of values as input, and return a single 
 value (either numeric, character, or some other simple printable value).  If no summary function is specified, the default is
-`length`, to count the length of the vector being passed.  
+`length`, to count the length of the vector being passed.
 
 Note that only one summary function can be specified for any cell in the table or an error will be
 reported.
@@ -416,7 +423,7 @@ reported.
 Example: `mean` and `sd` are specified functions; `n` is the renamed default statistic.
 
 ```{r}
-toLatex( tabular( (F+1) ~ (n=1) + X*(mean + sd) ) )
+tabular( (F+1) ~ (n=1) + X*(mean + sd) )
 ```
 
 
@@ -429,9 +436,9 @@ Example:  creating a factor to show all data.  Use the `identity` function to
 display the values in each cell.
 
 ```{r}
-toLatex( tabular( (i = factor(seq_along(X)))  ~ 
+tabular( (i = factor(seq_along(X)))  ~ 
        Heading()*identity*(X+A + 
-              (F = as.character(F) ) ) ) ) 
+              (F = as.character(F) ) ) )
 ```
  
 
@@ -442,8 +449,8 @@ If the expression evaluates to a logical vector, it is used to subset the data.
 Example:  creating subsets on the fly. 
 
 ```{r}
-toLatex( tabular( (X > 0) + (X < 0)  + 1
-    ~ ((n = 1) + X*(mean + sd)) ) )
+tabular( (X > 0) + (X < 0)  + 1
+    ~ ((n = 1) + X*(mean + sd)) )
 ```
  
 
@@ -474,35 +481,35 @@ must evaluate to `TRUE` for the vector.
 Example:  treating a logical vector as values.
 
 ```{r}
-toLatex( tabular( I(X > 0) + I(X < 0)  
-    ~ ((n=1) + mean + sd) ) )
+tabular( I(X > 0) + I(X < 0)
+    ~ ((n=1) + mean + sd) )
 ```
  
 
-## ``Pseudo-functions''
-\label{sec:pseudo}
+## "Pseudo-functions" {#sec:pseudo}
 
-Several directives to `tables` may be embedded in the table formula.  
-This is done using ``pseudo-functions''.  Syntactically
+Several directives to `tables` may be embedded in the table formula.
+This is done using "pseudo-functions".  Syntactically
 they look like function calls, but reserved names are used.  In most cases, 
 their action applies to later factors in the term in which they appear.
 For example,
 
- `X*Justify(r)*(Y + Format(digits=2)*Z) + A`
- 
+```r
+X*Justify(r)*(Y + Format(digits=2)*Z) + A
+```
+
 will apply the `Justify(r)` directive to both `Y` and `Z`, but
 the `Format(digits=2)` directive will only apply to `Z`, and neither will apply to `A`.
 
-### `Format()`
-\label{sec:formats}
+### `Format()` {#sec:formats}
 
 By default `tables` formats each column
 using the standard `format()` function, with arguments taken from the
-`format.tabular()` call (see section \ref{sec:formatsyntax}).  
+`format.tabular()` call (see section \ref{sec:formatsyntax}).
 
 The `Format()` pseudo-function does two
-things:  it changes the formatting, and it specifies that all values it applies to will be formatted together.  
-The ``call'' to `Format` looks like a call to `format`, but without 
+things:  it changes the formatting, and it specifies that all values it applies to will be formatted together.
+The "call" to `Format` looks like a call to `format`, but without
 specifying the argument `x`.  When `tabular()` formats the output it will construct
 `x` from the entries in the table governed by the `Format()` specification.
 
@@ -511,8 +518,8 @@ they are displayed with the same number of decimal places, chosen so that the sm
 values (the means) show two significant digits.
 
 ```{r}
-toLatex( tabular( (F+1) ~ (n=1) 
-           + Format(digits=2)*X*(mean + sd) ) )
+tabular( (F+1) ~ (n=1) 
+           + Format(digits=2)*X*(mean + sd) )
 ```
 
 
@@ -532,7 +539,7 @@ fmt <- function(x, digits, ...) {
   s[!is_stderr] <- latexNumeric(s[!is_stderr])
   s
 }
-toLatex( tabular( Format(fmt(digits=1))*(F+1) ~ X*(mean + stderr) ) )
+tabular( Format(fmt(digits=1))*(F+1) ~ X*(mean + stderr) )
 ```
 
 
@@ -547,8 +554,8 @@ indicated by the integer. In this way entries can be commonly formatted even whe
 Example:  Format two separated columns with the same format.
 
 ```{r}
-toLatex( tabular( (F+1) ~ X*(Format(digits=2)*mean 
-                    + (n=1) + .Format(1)*sd) ) )
+tabular( (F+1) ~ X*(Format(digits=2)*mean 
+                    + (n=1) + .Format(1)*sd) )
 ```
 
 
@@ -581,8 +588,8 @@ labels); if `FALSE`, it is moved in the opposite direction.
 Example:  Replace `F` with a Greek $\Phi$, and suppress the label for `X`.
 
 ```{r}
-toLatex( tabular( (Heading("$\\Phi$")*F+1) ~ (n=1) 
-           + Format(digits=2)*Heading()*X*(mean + sd) ) )
+tabular( (Heading("$\\Phi$")*F+1) ~ (n=1) 
+           + Format(digits=2)*Heading()*X*(mean + sd) )
 ```
 
 
@@ -590,8 +597,8 @@ Example:  Use `nearData = FALSE` to push a
 label away from the data:
 
 ```{r}
-toLatex( tabular( X*F + Heading("near")*X 
-		+ Heading("far", nearData = FALSE)*X ~ mean + sd ) )
+tabular( X*F + Heading("near")*X 
+		+ Heading("far", nearData = FALSE)*X ~ mean + sd )
 ```
 
 
@@ -606,8 +613,8 @@ for \LaTeX\ output, for example `Justify("r@{}")`, to suppress column spacing on
 Example: 
 
 ```{r}
-toLatex( tabular( Justify(r)*(F+1) ~ Justify(c)*(n=1) 
-   + Justify(c,r)*Format(digits=2)*X*(mean + sd) ) )
+tabular( Justify(r)*(F+1) ~ Justify(c)*(n=1) 
+   + Justify(c,r)*Format(digits=2)*X*(mean + sd) )
 ```
 
 
@@ -621,7 +628,7 @@ depends on other values in the table.  It has two optional arguments:
 used values are
 `"all"`, meaning all values are used, `"row"`, meaning only
 the values in the current row are used, `"col"`, meaning only the
-values in the current column are used.  
+values in the current column are used.
 
 The special syntax `Equal(...)`
 will record the expressions in `...`, and ignore any factor 
@@ -647,20 +654,20 @@ function could be used.
 These two examples are different ways of producing the same 
 table:
 
-```{r eval=FALSE>>=
-toLatex( tabular( (Factor(gear, "Gears") + 1)
+```{r eval=FALSE}
+tabular( (Factor(gear, "Gears") + 1)
           *((n=1) + Percent() 
             + (RowPct=Percent("row")) 
             + (ColPct=Percent("col"))) 
          ~ (Factor(carb, "Carburetors") + 1)
-          *Format(digits=1), data=mtcars ) )
+          *Format(digits=1), data=mtcars )
 ```{r}
-toLatex( tabular( (Factor(gear, "Gears") + 1)
+tabular( (Factor(gear, "Gears") + 1)
           *((n=1) + Percent() 
             + (RowPct=Percent(Equal(gear)))  # Equal, not "row"
             + (ColPct=Percent(Equal(carb)))) # Equal, not "col"
          ~ (Factor(carb, "Carburetors") + 1)
-          *Format(digits=1), data=mtcars ) )
+          *Format(digits=1), data=mtcars )
 ```
 
 
@@ -689,14 +696,14 @@ For example:
 wt <- c(5,  5,  4,  1)/15
 x <- c(3.7,3.3,3.5,2.8)
 gp <- c(1,1,2,2)
-toLatex( tabular( (Factor(gp) + 1) 
-                ~ weighted.mean*x*Arguments(w = wt) ) )
+tabular( (Factor(gp) + 1) 
+                ~ weighted.mean*x*Arguments(w = wt) )
 ```
 
 The same table (without the `x` heading) can be produced using
-```{r eval=false>>=
-toLatex( tabular( (Factor(gp) + 1) 
-                ~ Arguments(x, w = wt)*weighted.mean ) )
+```{r eval=FALSE}
+tabular( (Factor(gp) + 1) 
+                ~ Arguments(x, w = wt)*weighted.mean )
 ```
 The order of the `weighted.mean` and `Arguments()` factors makes no difference.
 
@@ -727,25 +734,24 @@ df <- data.frame(Label = LETTERS[1:9],
 		 Group = rep(letters[1:3], each=3), 
 		 Value = rnorm(9), 
 		 stringsAsFactors = TRUE)
-toLatex( tabular( Label ~ Group*Value*mean, 
-		data = df[1:6,]))
+tabular( Label ~ Group*Value*mean, 
+		data = df[1:6,])
 ```
 
 This looks much better:
 
 ```{r}
-toLatex( tabular( Label ~ Group*Value*mean*
+tabular( Label ~ Group*Value*mean*
 			DropEmpty(empty="."), 
-		data = df[1:6,]))
+		data = df[1:6,])
 ```
 
 
-## Formula Functions
-\label{sec:tableformulas}
+## Formula Functions {#sec:tableformulas}
 
 Currently several examples of formula functions are provided.   Not all are
 particularly robust; e.g. `Hline()` only works for \LaTeX\ output and must be in a
-particular position in the formula.  Users can provide their own as well.  
+particular position in the formula.  Users can provide their own as well.
 Such functions
 should return a language object, which will be substituted into the formula in place of the formula
 function call.
@@ -755,7 +761,7 @@ function call.
 This function expands all the columns from a dataframe into separate variables in the table.
 It has syntax
 
-```
+```r
 All(df, numeric=TRUE, character=FALSE, logical=FALSE, 
         factor=FALSE, complex=FALSE, raw=FALSE, other=FALSE,
         texify=getOption("tables.texify", FALSE))
@@ -778,7 +784,7 @@ Example:  Show the means of the numeric columns in the iris data.
 
 
 ```{r}
-toLatex( tabular( Species ~ Heading()*mean*All(iris), data=iris) )
+tabular( Species ~ Heading()*mean*All(iris), data=iris)
 ```
 
 
@@ -793,8 +799,8 @@ correspond to non-existent observations.  For example,
 
 ```{r}
 df <- mtcars[1:10,]
-toLatex( tabular(Factor(cyl)*Factor(gear)*AllObs(df) ~ 
-               rownames(df) + mpg, data=df) )
+tabular(Factor(cyl)*Factor(gear)*AllObs(df) ~ 
+               rownames(df) + mpg, data=df)
 ```
 
 
@@ -811,23 +817,23 @@ in the `within` argument to `AllObs()`. For example,
 
 ```{r}
 rownum <- with(mtcars, RowNum(list(cyl, gear)))
-toLatex( tabular(Factor(cyl)*Factor(gear)*I(rownum) ~
+tabular(Factor(cyl)*Factor(gear)*I(rownum) ~
         mpg * AllObs(mtcars, within = list(cyl, gear, rownum)), 
-        data=mtcars) )
+        data=mtcars)
 ```
 
 
 Despite its name, `RowNum` can be used to specify columns
 instead of rows, for a column-major display.  In this
 case, its `perrow` argument should be interpreted
-as ``per column''.  For example,
+as "per column".  For example,
 
 ```{r}
 rownum <- with(mtcars, RowNum(list(cyl, gear), perrow = 2))
-toLatex( tabular(Factor(cyl)*Factor(gear)*
+tabular(Factor(cyl)*Factor(gear)*
 	       AllObs(mtcars, within = list(cyl, gear, rownum)) ~
                mpg * I(rownum), 
-        data=mtcars) )
+        data=mtcars)
 ```
 
 
@@ -837,31 +843,30 @@ This function produces horizontal lines in the table.  It only works for LaTeX o
 must be the first factor in a term in the table formula.
 It has syntax
 
-```
+```r
 Hline(columns)
 ```
 
 The argument is
 
 - ``columns`: An optional vector listing which columns should 
-get the line.  
+get the line.
 
 
-Example:  
+Example:
 
 
-```{r results = tex>>=
-toLatex( tabular( Species + Hline(2:5) + 1 
-                         ~ Heading()*mean*All(iris), data=iris) )
+```{r}
+tabular( Species + Hline(2:5) + 1 
+                         ~ Heading()*mean*All(iris), data=iris)
 ```
 
 
-### `Literal()`
-\label{sec:Literal}
+### `Literal()` {#sec:Literal}
 
 This function inserts literal text as a label.  It has syntax
 
-```
+```r
 Literal(x)
 ```
 
@@ -872,7 +877,7 @@ The single argument is the text to insert.  It is used by the `Hline()` function
 This function produces table entries like $x \pm y$ with an optional header.
 It has syntax
 
-```
+```r
 PlusMinus(x, y, head, xhead, yhead, digits=2, ...)
 ```
 
@@ -889,8 +894,8 @@ Example:  Display mean $\pm$ standard error.
 
 ```{r}
 stderr <- function(x) sd(x)/sqrt(length(x))
-toLatex( tabular( (Species+1) ~ All(iris)*
-          PlusMinus(mean, stderr, digits=1), data=iris ) )
+tabular( (Species+1) ~ All(iris)*
+          PlusMinus(mean, stderr, digits=1), data=iris )
 ```
 
 
@@ -898,7 +903,7 @@ toLatex( tabular( (Species+1) ~ All(iris)*
 
 This function produces table entries made up of multiple values.  It has syntax
 
-```
+```r
 Paste(..., head, digits=2, justify="c", prefix="", sep="",
       postfix="")
 ```
@@ -924,11 +929,11 @@ Example:  Display a confidence interval.
 ```{r}
 lcl <- function(x) mean(x) - qt(0.975, df=length(x)-1)*stderr(x)
 ucl <- function(x) mean(x) + qt(0.975, df=length(x)-1)*stderr(x)
-toLatex( tabular( (Species+1) ~ All(iris)*
+tabular( (Species+1) ~ All(iris)*
           Paste(lcl, ucl, digits=2, 
                 head="95\\% CI", sep=",", prefix="[",
                 postfix="]"), 
-          data=iris ) )
+          data=iris )
 ```
 
 
@@ -945,7 +950,7 @@ multiple columns on its own line.
 
 They have syntax
 
-```
+```r
 Factor(x, name, levelnames, texify=getOption("tables.texify", FALSE))
 RowFactor(x, name, levelnames, spacing=3, space=1, 
                     nopagebreak="\\nopagebreak", texify=getOption("tables.texify", FALSE))
@@ -960,11 +965,11 @@ The arguments are
 - `levelnames` An optional argument to allow customization of the displayed level names.
 - `texify` Whether to escape \LaTeX\ special characters.  See section \ref{sec:formatdetails}.
 - `spacing` Extra spacing is added before every group of `spacing` lines.
-- `space` How much extra space to add (in ``ex'' units).
+- `space` How much extra space to add (in "ex" units).
 - `nopagebreak` Macro to insert to suppress page breaks except between groups.
 - `width` How many columns for the label?
-- `first] What is the first column?
-- `justify] What justification to use.
+- `first`: What is the first column?
+- `justify`: What justification to use.
 
 
 Example:  Show the first 15 lines of the iris dataset, in groups of 5 lines.
@@ -972,15 +977,15 @@ Example:  Show the first 15 lines of the iris dataset, in groups of 5 lines.
 
 ```{r}
 subset <- 1:15
-toLatex( tabular( RowFactor(subset, "$i$", spacing=5)  ~ 
-       All(iris[subset,], factor=as.character)*Heading()*identity ) )
+tabular( RowFactor(subset, "$i$", spacing=5)  ~ 
+       All(iris[subset,], factor=as.character)*Heading()*identity )
 ```
 
  
 To add extra space after each high level group in a multi-way
 classification, use `spacing = 1`.  For example:
 
-```{r}
+```{r results = "asis"}
 set.seed(1000)
 dat <- expand.grid(Block=1:3, Treatment=LETTERS[1:2], 
                                 Subset=letters[1:2])
@@ -989,7 +994,7 @@ toLatex( tabular( RowFactor(Block, spacing=1)
                 * RowFactor(Treatment, spacing=1, space=0.5)
                 * Factor(Subset)
                 ~ Response*Heading()*identity, data=dat),
-                options=list(rowlabeljustification="c"))
+                options=list(rowlabeljustification="c") )
 ```
 
 
@@ -1011,7 +1016,7 @@ To avoid extra spacing at the top of those pages, we need
 to undo the automatic addition of a \verb!\normalbaselineskip! there, and use
 `suppressfirst=FALSE` so that the first page doesn't get messed up.  Whew!
 
-```{r}
+```{r results = "asis"}
 subset <- 1:50
 toLatex( tabular( RowFactor(subset, "$i$", spacing=5, 
                                              suppressfirst=FALSE)  ~ 
@@ -1030,14 +1035,14 @@ of `RowFactor()` won't work without the row labels.
 
 ```{r}
 subset <- 1:10
-toLatex( tabular( Factor(subset)  ~ 
+tabular( Factor(subset)  ~ 
        All(iris[subset,], factor=as.character)*Heading()*identity, 
-       suppress=3 ) )
+       suppress=3 )
 ```
 
 (It is actually possible to get this to work with `RowFactor()`, but it
 is ugly: set the name and level names to `""`, and set the
-justification to `"l```{}"` to suppress the intercolumn spacing.  Then
+justification to `"l@{}"` to suppress the intercolumn spacing.  Then
 the column of row labels will be there, but it will be zero width and
 invisible.)
 
@@ -1047,7 +1052,7 @@ in any column except the first one.  One workaround for this is to post-process 
 to move the macro.  For example, if `tab` contains the result of `tabular()` and
 \LaTeX\ complains about misplaced \verb!\nopagebreak! macros, 
 this will allow it to be displayed properly:
-```{r eval=FALSE>>=
+```{r eval=FALSE}
 code <- capture.output( toLatex( tab ) )
 code <- sub("^(.*)(\\\\nopagebreak )", "\\2\\1", code)
 cat(code, sep = "\n")
@@ -1057,18 +1062,17 @@ To get group labels to span multiple columns, the `levelnames` argument
 can be used with embedded \LaTeX\ code.  For example,
 
 ```{r}
-toLatex( tabular( Multicolumn(Species, width=3, 
+tabular( Multicolumn(Species, width=3, 
             levelnames=paste("\\textit{Iris", levels(Species),"}")) 
-            * (mean + sd)  ~ All(iris), data=iris, suppress=1))
+            * (mean + sd)  ~ All(iris), data=iris, suppress=1)
 ```
 
 
 # Further Details
 
-## Formatting
-\label{sec:formatdetails}
+## Formatting {#sec:formatdetails}
 
-As mentioned in \ref{sec:formats}, formatting in `tables` depends on the standard `format()`
+As mentioned in \@ref(sec:formats), formatting in `tables` depends on the standard `format()`
 function or other user-selected functions.  Here are the details of how it is done.
 
 The `format.tabular()` method does the first part of the work.  First, it constructs the calls
@@ -1108,15 +1112,15 @@ with the definition
 df <- data.frame(A = factor(c( "$", "\\" ) ), B_label=1:2)
 ```
 the code
-```{r eval=FALSE>>=
-toLatex( tabular( mean ~ A*B_label, data=df ) ) 
+```{r eval=FALSE}
+tabular( mean ~ A*B_label, data=df ) 
 ```
 would fail, as the labels would include the special characters.  But this will work, provided the `Hmisc` package is
 available:
 
 ```{r}
 options(tables.texify = TRUE)
-toLatex( tabular( mean ~ Factor(A)*All(df), data=df ) ) 
+tabular( mean ~ Factor(A)*All(df), data=df )
 ```
 
 Use of the `texify` option requires that the suggested package `"Hmisc"` be
@@ -1149,23 +1153,23 @@ different behaviour.  For example,
 
 ```{r}
 Mean <- function(x) base::mean(x, na.rm=TRUE)
-toLatex( tabular( Mean ~ a + b, data=dat ) )
+tabular( Mean ~ a + b, data=dat )
 ```
 
 An alternative approach is to use `na.omit()` to work on a subset of your data which has 
 rows with any missing values removed, e.g. 
 
 ```{r}
-toLatex( tabular( mean ~ a + b, data = na.omit(dat) ) )
+tabular( mean ~ a + b, data = na.omit(dat) )
 ```
 
 A third possibility is to use the `complete.cases()` function to remove missings
 only from some columns, e.g.
 
 ```{r}
-toLatex( tabular( 
+tabular( 
   Mean ~ (1 + Heading(Complete)*complete.cases(dat)) * (a + b), 
-               data=dat ) )
+               data=dat )
 ```
 
 
@@ -1177,9 +1181,9 @@ compare the following two tables:
 
 ```{r}
 A <- factor(dat$a)
-toLatex( tabular( A + 1 ~ (n=1)) )
+tabular( A + 1 ~ (n=1))
 A <- factor(dat$a, exclude = NULL)
-toLatex( tabular( A + 1 ~ (n=1) ) )
+tabular( A + 1 ~ (n=1) )
 ```
 
 
@@ -1198,14 +1202,14 @@ q <- data.frame(p = rep(c("A","B"),each=10,len=30),
 		stringsAsFactors = FALSE)
 tab <- tabular((Factor(p)*Factor(a)+1) 
                 ~ (N = 1) + (b + c)*(mean+sd), data = q)
-toLatex(tab)
+tab
 ```
 
 To omit those rows,  use matrix-like subsetting to select the rows where the
 first column of data (i.e. $N$) is greater than zero:
 
 ```{r}
-toLatex(tab[ tab[,1] > 0, ])
+tab[ tab[,1] > 0, ]
 ```
 
 Similarly, `cbind()` can be used to join tables that have identical row labels,
@@ -1219,7 +1223,7 @@ tab <- NULL
 for (sub in c("A", "B")) 
     tab <- rbind(tab, tabular( formula, 
                                data = subset(q, p == sub) ) )
-toLatex(tab)
+tab
 ```
 
 
@@ -1233,21 +1237,22 @@ colLabels(tab) <- labs
 ```
 
 ```{r}
-toLatex(tab)
+tab
 ```
 
-Note that \verb!<NA>! in the column labels means ``same as 
-the label to the left'', and in the row labels it means
-``same as the label above''.  This is used in constructing
+Note that `<NA>` in the column labels means "same as 
+the label to the left", and in the row labels it means
+"same as the label above".  This is used in constructing
 multi-column or multi-row labels.
 
-## `knitr`,  `rmarkdown` and `kableExtra` support
+## `knitr`,  `rmarkdown` and `kableExtra` support {#sec:knitr}
 
-This vignette was originally written many years ago using `Sweave`, and is still in that format.
+This vignette was originally written many years ago using
+`Sweave`, and is still available in that format.
 Nowadays I would recommend most users to use `knitr` instead:
 it is easier and more flexible.  The input may be in Noweb syntax
-very similar to this file, or Markdown syntax using the `rmarkdown`
-package.  
+very similar to `Sweave`, or Markdown syntax using the `rmarkdown`
+package, as in this file.
 
 One specific advantage of using `knitr` or `rmarkdown` is that 
 explicit calls to `toLatex()` are not needed:  by default, 
@@ -1255,7 +1260,7 @@ tabular objects will print in the appropriate formatting for
 \LaTeX\ or HTML output.
 
 The `kableExtra` package
-may be used to customize displays.  
+may be used to customize displays.
 For example, the code below causes the table to be full width,
 and the colour of
 the 4th column is changed.
@@ -1270,7 +1275,7 @@ toKable(tab) %>%
   column_spec(4, color = "red")
 ```
 
-See the HTML vignette (which is written in rmarkdown) for more discussion and examples.
+See the HTML vignette (which is written in `rmarkdown`) for more discussion and examples.
 
 ## Captions, labels, etc.
 
