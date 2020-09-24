@@ -147,3 +147,6 @@
       
 0.9.4:
       Minor update to fix test note.
+
+0.9.7:
+      toHTML() was ignoring the file argument.
