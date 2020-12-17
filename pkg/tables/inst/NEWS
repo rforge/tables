@@ -150,3 +150,6 @@
 
 0.9.7:
       toHTML() was ignoring the file argument.
+
+0.9.8:
+      All() didn't work with tibbles.  (Reported by Vincent Arel-Bundock.)
